@@ -24,11 +24,11 @@ Big :: Big(Big& old_n) {
 }
 
 int Big :: GetCapacity() {
-		return ah - al;
+		return ah - al + 1;
 }
 
 int Big :: GetLength() {
-		return ar - al;
+		return ar - al + 1;
 }
 
 void Big :: Resize(int new_capacity) {
@@ -56,65 +56,59 @@ Big& Big ::  operator = (Big &a) {
 
 Big& operator + (Big &b, Big &a) {
 	Big result;
-	unsigned long long glass;// for the overflow:)
+	doubleBase glass;// for the overflow:)
 	base mask = ~0;
 	int carry = 0; //at the begin of addition
-	int recommendCapacity; //memory for the new number
-	int BCapacity = b.GetCapacity();
-	int ACapacity = a.GetCapacity();
-	if(ACapacity >= BCapacity) {
-		recommendCapacity = ACapacity;
-	}
-	else {
-		recommendCapacity = BCapacity;
-	}
-	if(recommendCapacity+1 > result.GetCapacity()) {
-		result.Resize(recommendCapacity+1); // +1, because just one block is needed for +
-	}
-
 	int BLength = b.GetLength();
 	int ALength = a.GetLength();
-	int length; 
+	int length, LessLength; 
 	if (ALength <= BLength) {
 		length = ALength;
+		LessLength = BLength;
 	}
 	else {
 		length = BLength;
+		LessLength = ALength;
 	}
+	
+	if(length+1 > result.GetCapacity()) {
+		result.Resize(length + 1);
+	}
+
+	result.ar = result.al;
+
 	int i;
-	for(i=0; i<length; i++) {
+	for(i=0; i<LessLength; i++) {
 		glass = b.al[i] + a.al[i] + carry;
 		result.al[i] = glass % mask;
 		result.ar++;
-		carry = !!(glass & mask); //for the next digit
+		carry = !!(glass / mask); //for the next digit
 	}
 	//add tail from array, which longer
 	if(i < ALength) {
-		glass = a.al[i] + carry;
-		result.al[i] = glass % mask;
-		result.ar++;
-		carry = !!(glass & mask);
-		i++;
-		result.al[i] = a.al[i] + carry;
-		for(i=++i; i< ALength; i++) {
-			result.al[i] = a.al[i];
+		for(i = ++i; i < ALength; i++) {
+			glass = a.al[i] + carry;
+			result.al[i] = glass % mask;
+			result.ar++;
+			carry = !!(glass / mask);
+			i++;
+			result.al[i] = a.al[i] + carry;
 		}
 	}
 
 	else if(i < BLength){
-		glass = b.al[i] + carry;
-		result.al[i] = glass % mask;
-		result.ar++;
-		carry = !!(glass & mask);
-		i++;
-		result.al[i] = b.al[i] + carry;
-		for(i=++i; i< BLength; i++) {
-			result.al[i] = b.al[i];
+		for(i = ++i; i < BLength; i++) { 
+			glass = b.al[i] + carry;
+			result.al[i] = glass % mask;
+			result.ar++;
+			carry = !!(glass / mask);
+			i++;
+			result.al[i] = b.al[i] + carry;
 		}
 	}
 	cout << result;
 	return result;
-
+	
 }
 
 ostream& operator << (ostream &out, Big &a) { 

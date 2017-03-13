@@ -4,6 +4,7 @@ using namespace std;
 
 typedef int BigError;
 typedef unsigned int base;
+typedef unsigned long long doubleBase;
 
 namespace BigErrors {
 		static const BigError OK = 0;
