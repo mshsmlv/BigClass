@@ -12,7 +12,7 @@ Big :: Big() {
 
 Big :: ~Big() {
 		if(al)
-			delete al;
+			delete [] al;
 }
 
 Big :: Big(Big& old_n) {
