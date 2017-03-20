@@ -80,7 +80,7 @@ cout << this -> GetLength() << endl;
 Big operator + (Big &b, Big &a) {
 	Big result;
 	doubleBase glass;// for the overflow:)
-	doubleBase mask = 1 << sizeof(base);
+	doubleBase mask = 1 << (sizeof(base)*8);
 	int carry = 0; //at the begin of addition
 	int BLength = b.GetLength();
 	int ALength = a.GetLength();
@@ -146,98 +146,127 @@ Big operator - (Big &b, Big &a) {
 	}
 	
 	Big result;
+	result.ar = result.al;
 	
 	if(0 == flag) {
-		result.ar = result.al + 1;
+		result.ar++;
 		result.al[0] = 0;
 		return result;
 	}
 
 	int carry = 0;
 	int given = 0;
-	doubleBase mask = 1 << sizeof(base);
+	doubleBase mask = 1 << (sizeof(base)*8); //ЗДЕСЬ МАГИЯ!!!
 	doubleBase cup = 0;
 	doubleBase glass;
 
-	for(int i=0; i < a.GetLength(); i++) {
-		
+	int i;
+	for(i=0; i < a.GetLength(); i++) {
+
+		result.ar++;
 		cup = a.al[i] + carry;
+		
 		if(static_cast<doubleBase>(b.al[i]) < cup) {
-			carry = 1;
+			cout << "занял" << endl;
 			given = 1;
 		}
 		
 		if(given) {
 			glass  = static_cast<doubleBase>(b.al[i]) + 
-						static_cast<doubleBase>(mask) -
-							static_cast<doubleBase>(a.al[i])- 
-								 static_cast<doubleBase>(carry);
-			result[i] = glass;
-
+						mask -
+							cup; 
+			cout << "glass: " << mask << endl;
+			result.al[i] = glass;
+			carry = 1;
+			given = 0;
 		}
+
 		else {
-			result.al[i] = static_cast<doubleBase> - cup;
+			result.al[i] = static_cast<doubleBase>(b.al[i]) - cup;
+		}
+	}
+	
+	for(i; i < b.GetLength(); i++) {
+
+		result.ar++;
+		if(static_cast<doubleBase>(b.al[i]) < carry) {
+			given = 1;
 		}
 
-	}
+		if(given) {
+			glass = static_cast<doubleBase>(b.al[i]) + 
+						static_cast<doubleBase>(mask) - 
+							static_cast<doubleBase>(carry);
+			result.al[i] = glass;
+			carry = 1;
+			given = 0;
+		}
 
+		else {
+			result.al[i] = static_cast<doubleBase>(b.al[i]) - carry;
+		}
+	}
+	return result;
 }
 
 ostream& operator << (ostream &out, Big &a) { 
-		int block = sizeof(base)*2; // *8/4 how many numbers in the "base"
-		int length = a.GetLength();
-		int mask = 0xF;
-		char tmp;
-		out << "0x";
-		for(int i = length-1; i >= 0; i--) { //starting from the older
-				for(int l = (block-1)*4; l >= 0; l-=4) {
-						tmp = (a.al[i] & (mask << l)) >> l ; //get an each number from the block(one number - four bytes) 
-						if(tmp >= 0 && tmp <= 9) {
-								tmp = tmp + '0';
-								out << tmp;
-						} else if(tmp >= 0xA && tmp <= 0xF) {
-								tmp = tmp + 87;
-								out << tmp; 
-						}
-						else cout << "dich" << endl;
-				}
+	int block = sizeof(base)*2; // *8/4 how many numbers in the "base"
+	int length = a.GetLength();
+	int mask = 0xF;
+	char tmp;
+	out << "0x";
+	for(int i = length-1; i >= 0; i--) { //starting from the older
+		for(int l = (block-1)*4; l >= 0; l-=4) {
+			tmp = (a.al[i] & (mask << l)) >> l ; //get an each number from the block(one number - four bytes) 
+			if(tmp >= 0 && tmp <= 9) {
+				tmp = tmp + '0';
+				out << tmp;
+			} 
+			else if(tmp >= 0xA && tmp <= 0xF) {
+				tmp = tmp + 87;
+				out << tmp; 
+			}
+			else cout << "dich" << endl;
 		}
-		out << endl;
+	}
+	out << endl;
 }
 
 istream& operator >> (istream &in, Big &a) {
-		int block = sizeof(base)*2; // *8 / 4
-		base tmp_0, tmp_1; //tmp 0 | tmp_1 -> al[i]
-		int index;
-		string string_for_num;
-		cout << "Input num in 16:" << endl;
-		in >> string_for_num;
-		int length_s = string_for_num.length(); // includes "0x"
-		int n = (length_s-2) / block + !!((length_s-2) % (block));
-		if (n > a.GetCapacity()) { 
-				a.Resize(n);
-		} 
-
-		for(int k=0; k<n; k++){
-				tmp_0 = 0;
-				tmp_1 = 0;
-				for(int i=0; i < block; i++) {
-						index = length_s - k*block - i - 1;
-						if(index < 2) //control start of the string 
-								break;
-						char symbol = string_for_num[index]; 
-						if(symbol >= '0' && symbol <= '9') {
-								tmp_1 = symbol - 48;
-						} else if(symbol >= 'a' && symbol <= 'f') {
-								tmp_1 = symbol - 87; //10 + symbol - 97;
-								}
-								else if(symbol >= 'A' && symbol <= 'F') {
-									tmp_1 = symbol - 55; //symbol + 10 - 65
-									} 
-									else throw INCORRECT_SYMBOL;
-						tmp_0 = tmp_0 | (tmp_1 << 4*i);
+	int block = sizeof(base)*2; // *8 / 4
+	base tmp_0, tmp_1; //tmp 0 | tmp_1 -> al[i]
+	int index;
+	string string_for_num;
+	cout << "Input num in 16:" << endl;
+	in >> string_for_num;
+	int length_s = string_for_num.length(); // includes "0x"
+	int n = (length_s-2) / block + !!((length_s-2) % (block));
+	if (n > a.GetCapacity()) { 
+		a.Resize(n);
+	} 
+	for(int k=0; k<n; k++) {
+		tmp_0 = 0;
+		tmp_1 = 0;
+		for(int i=0; i < block; i++) {
+			index = length_s - k*block - i - 1;
+			if(index < 2) //control start of the string 
+				break;
+			char symbol = string_for_num[index]; 
+			if(symbol >= '0' && symbol <= '9') {
+				tmp_1 = symbol - 48;
+			} 
+			else 
+				if(symbol >= 'a' && symbol <= 'f') {
+				tmp_1 = symbol - 87; //10 + symbol - 97;
 				}
-				a.al[k] = tmp_0;
-				a.ar++; //changing right range
+			else 
+				if(symbol >= 'A' && symbol <= 'F') {
+					tmp_1 = symbol - 55; //symbol + 10 - 65
+				} 
+				else throw INCORRECT_SYMBOL;
+			tmp_0 = tmp_0 | (tmp_1 << 4*i);
 		}
+		a.al[k] = tmp_0;
+		a.ar++; //changing right range
+	}
 }
