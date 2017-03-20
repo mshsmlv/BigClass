@@ -23,12 +23,12 @@ Big :: Big(Big& old_n) {
 		ar = al + length;
 }
 
-int Big :: GetCapacity() {
+int Big :: GetCapacity() const {
 		return ah - al + 1;
 }
 
-int Big :: GetLength() {
-		return ar - al + 1;
+int Big :: GetLength() const {
+		return ar - al;
 }
 
 void Big :: Resize(int new_capacity) {
@@ -40,13 +40,36 @@ void Big :: Resize(int new_capacity) {
 		}
 }
 
-Big& Big ::  operator = (Big &a) { 
+int Compare(const Big &b, const Big &a) {
+	if(b.GetLength() > a.GetLength()) {
+		return 1;
+	}
+	else if(b.GetLength() < a.GetLength()) {
+			return -1;
+		}
+
+	for(int i = a.GetLength()-1; 0 <= i; i--) {
+		if(b.al[i] > a.al[i]) {
+			return 1;
+		}
+		else if (b.al[i] < a.al[i]) {
+			return -1;
+		}
+	}
+	
+	return 0;
+}
+
+
+Big& Big ::  operator = (const Big &a) {
 	if(this -> GetCapacity() != a.GetCapacity()) {
 		this -> Resize(a.GetCapacity());
 	}
 	
-	this -> ar = this -> al;	
+	this -> ar = this -> al;
+cout << this -> GetLength() << endl;
 	int length = a.GetLength();
+	cout << length << endl;
 	
 	for(int i=0; i<length; i++) {
 		this -> al[i] = a.al[i];
@@ -54,10 +77,10 @@ Big& Big ::  operator = (Big &a) {
 	}
 }
 
-Big& operator + (Big &b, Big &a) {
+Big operator + (Big &b, Big &a) {
 	Big result;
 	doubleBase glass;// for the overflow:)
-	base mask = ~0;
+	doubleBase mask = 1 << sizeof(base);
 	int carry = 0; //at the begin of addition
 	int BLength = b.GetLength();
 	int ALength = a.GetLength();
@@ -79,9 +102,9 @@ Big& operator + (Big &b, Big &a) {
 
 	int i;
 	for(i=0; i<LessLength; i++) {
-		glass = b.al[i] + a.al[i] + carry;
-		result.al[i] = glass % mask;
+		glass = static_cast<doubleBase>(b.al[i]) + static_cast<doubleBase>(a.al[i]) + carry;
 		result.ar++;
+		result.al[i] = glass % mask;
 		carry = !!(glass / mask); //for the next digit
 	}
 	//add tail from array, which longer
@@ -106,9 +129,58 @@ Big& operator + (Big &b, Big &a) {
 			result.al[i] = b.al[i] + carry;
 		}
 	}
-	cout << result;
+
+
+	if (carry) {//digit carry in
+			result.al[i] = carry;
+			result.ar++;
+	}
 	return result;
+}
+
+
+Big operator - (Big &b, Big &a) {
+	int flag = Compare(b, a);
+	if(-1 == flag) {
+		throw INCOMPATIBLE_OPERANDS;
+	}
 	
+	Big result;
+	
+	if(0 == flag) {
+		result.ar = result.al + 1;
+		result.al[0] = 0;
+		return result;
+	}
+
+	int carry = 0;
+	int given = 0;
+	doubleBase mask = 1 << sizeof(base);
+	doubleBase cup = 0;
+	doubleBase glass;
+
+	for(int i=0; i < a.GetLength(); i++) {
+		
+		cup = a.al[i] + carry;
+		if(static_cast<doubleBase>(b.al[i]) < cup) {
+			carry = 1;
+			given = 1;
+		}
+		
+		if(given) {
+			glass  = static_cast<doubleBase>(b.al[i]) + 
+						static_cast<doubleBase>(mask) -
+							static_cast<doubleBase>(a.al[i])- 
+								 static_cast<doubleBase>(carry);
+			result[i] = glass;
+
+		}
+		else {
+			result.al[i] = static_cast<doubleBase> - cup;
+		}
+
+	}
+
 }
 
 ostream& operator << (ostream &out, Big &a) { 
