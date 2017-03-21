@@ -80,7 +80,7 @@ cout << this -> GetLength() << endl;
 Big operator + (Big &b, Big &a) {
 	Big result;
 	doubleBase glass;// for the overflow:)
-	doubleBase mask = 1 << (sizeof(base)*8);
+	doubleBase mask = static_cast<doubleBase>(1) << (sizeof(base)*8);
 	int carry = 0; //at the begin of addition
 	int BLength = b.GetLength();
 	int ALength = a.GetLength();
@@ -156,7 +156,7 @@ Big operator - (Big &b, Big &a) {
 
 	int carry = 0;
 	int given = 0;
-	doubleBase mask = 1 << (sizeof(base)*8); //ЗДЕСЬ МАГИЯ!!!
+	doubleBase mask = static_cast<doubleBase>(1) << (sizeof(base)*8); //ЗДЕСЬ МАГИЯ!!!
 	doubleBase cup = 0;
 	doubleBase glass;
 
