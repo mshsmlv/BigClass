@@ -1,5 +1,7 @@
 #include "big.h"
-#include <string.h>
+#include <stdlib.h>
+
+//#include <string.h>
 
 using namespace BigErrors;
 typedef unsigned int base;
@@ -23,6 +25,21 @@ Big :: Big(Big& old_n) {
 		ar = al + length;
 }
 
+int Big :: Rand(int boundary) {
+	
+	if(GetCapacity() < boundary) {
+		Resize(TEST_BOX);	
+	}
+
+	ar = al;
+	for(int i = 0; i < boundary; i++) {
+		al[i] =  rand();
+		ar++;
+	}
+	return 0;
+
+}
+
 int Big :: GetCapacity() const {
 		return ah - al + 1;
 }
@@ -31,13 +48,25 @@ int Big :: GetLength() const {
 		return ar - al;
 }
 
+//quantity of boxes
 void Big :: Resize(int new_capacity) {
 		if(this -> GetCapacity() < new_capacity) {
 				if(al) 
 					delete [] al;
 				al = new base[new_capacity];
+				ah = al + new_capacity; //??????????!!!!!!
 				ar = al;
 		}
+}
+
+//aborting insignificant zeros
+void Big :: Compress() {
+	for(int i = GetLength()-1; 0 < i; i--) {
+		if(al[i] != 0) {
+			return;
+		}
+		ar--;
+	}
 }
 
 int Compare(const Big &b, const Big &a) {
@@ -59,7 +88,6 @@ int Compare(const Big &b, const Big &a) {
 	
 	return 0;
 }
-
 
 Big& Big ::  operator = (const Big &a) {
 	if(this -> GetCapacity() != a.GetCapacity()) {
@@ -84,18 +112,25 @@ Big operator + (Big &b, Big &a) {
 	int carry = 0; //at the begin of addition
 	int BLength = b.GetLength();
 	int ALength = a.GetLength();
-	int length, LessLength; 
+	int LessLength;
+	int rcapacity;
+
 	if (ALength <= BLength) {
-		length = ALength;
 		LessLength = BLength;
 	}
 	else {
-		length = BLength;
 		LessLength = ALength;
 	}
+
+	if(a.GetCapacity() <= b.GetCapacity()) {
+		rcapacity = b.GetCapacity();
+	}
+	else {
+		rcapacity = a.GetCapacity();
+	}
 	
-	if(length+1 > result.GetCapacity()) {
-		result.Resize(length + 1);
+	if(rcapacity+1 > result.GetCapacity()) {
+		result.Resize(rcapacity + 1);
 	}
 
 	result.ar = result.al;
@@ -135,6 +170,8 @@ Big operator + (Big &b, Big &a) {
 			result.al[i] = carry;
 			result.ar++;
 	}
+
+	result.Compress();
 	return result;
 }
 
@@ -146,8 +183,10 @@ Big operator - (Big &b, Big &a) {
 	}
 	
 	Big result;
+	result.Resize(b.GetCapacity());
 	result.ar = result.al;
 	
+	//if they are equal
 	if(0 == flag) {
 		result.ar++;
 		result.al[0] = 0;
@@ -167,7 +206,6 @@ Big operator - (Big &b, Big &a) {
 		cup = a.al[i] + carry;
 		
 		if(static_cast<doubleBase>(b.al[i]) < cup) {
-			cout << "занял" << endl;
 			given = 1;
 		}
 		
@@ -175,7 +213,6 @@ Big operator - (Big &b, Big &a) {
 			glass  = static_cast<doubleBase>(b.al[i]) + 
 						mask -
 							cup; 
-			cout << "glass: " << mask << endl;
 			result.al[i] = glass;
 			carry = 1;
 			given = 0;
@@ -206,6 +243,7 @@ Big operator - (Big &b, Big &a) {
 			result.al[i] = static_cast<doubleBase>(b.al[i]) - carry;
 		}
 	}
+	result.Compress();
 	return result;
 }
 

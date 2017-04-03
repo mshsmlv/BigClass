@@ -3,6 +3,8 @@
 #include <cstring>
 using namespace std;
 
+const int TEST_BOX = 100000;
+
 typedef int BigError;
 typedef unsigned int base;
 typedef unsigned long long doubleBase;
@@ -24,10 +26,13 @@ class Big {
 		~Big();
 		Big(Big&);
 
+		int Rand(int bound);
 		int GetCapacity() const;
 		int GetLength() const;
 		void Resize(int); //количество блоков
+		void Compress();
 		friend int Compare(const Big &b, const Big &a);
+
 
 		Big& operator = (const Big &a); // this = a
 		friend Big operator + (Big &b, Big &a);
