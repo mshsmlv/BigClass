@@ -69,6 +69,32 @@ void Big :: Compress() {
 	}
 }
 
+Big Big :: Imul(base small) {
+	Big result;
+	doubleBase mask = static_cast<doubleBase>(1) << (sizeof(base)*8);
+	
+	if(result.GetCapacity() < this->GetLength() + 1) {
+		result.Resize(GetLength()+1);
+	}
+
+	doubleBase cup;
+	doubleBase carry = 0;
+	result.ar=result.al;
+
+	int i;
+	cout << "i=" << GetLength() << endl;
+	for(i=0; i<GetLength(); i++) {
+		cup = static_cast<doubleBase>(al[i])*static_cast<base>(small) + carry;
+		carry = cup / mask;
+		result.al[i] =  static_cast<base>(cup%mask);
+		result.ar++;
+	}
+	result.al[i] = carry;
+	result.ar++;
+	result.Compress();
+	return result;
+}
+
 int Compare(const Big &b, const Big &a) {
 	if(b.GetLength() > a.GetLength()) {
 		return 1;
@@ -245,6 +271,46 @@ Big operator - (Big &b, Big &a) {
 	}
 	result.Compress();
 	return result;
+}
+
+Big operator * (Big &b, Big &a) {
+	
+	Big result;
+	if(a.GetLength() <= 1) {
+		result = b.Imul(a.al[0]);
+		return result;
+	}
+	result.Resize(b.GetLength() + a.GetLength());
+
+	doubleBase mask = static_cast<doubleBase>(1) << (sizeof(base)*8);
+	doubleBase cup;
+	doubleBase carry = 0;
+
+	//filling with zeros
+	for(int i=0; i<result.GetCapacity(); i++) {
+		result.al[i] = 0;
+		result.ar++;
+	}
+
+	int i, j;
+	for (j = 0; j < a.GetLength(); j++) { 
+		
+		if(0 == a.al[j]) {
+			continue;
+		}
+
+		for(i = 0; i < b.GetLength(); i++) {
+			cup = static_cast<doubleBase>(b.al[i])*static_cast<doubleBase>(a.al[j]) +
+					static_cast<doubleBase>(result.al[i+j]) + carry;
+			result.al[i+j] = static_cast<base>(cup);
+			carry = cup >> sizeof(base)*8;
+		}
+		result.al[i+j] = carry;
+		carry = 0;
+	}
+	result.Compress();
+	return result;
+
 }
 
 ostream& operator << (ostream &out, Big &a) { 

@@ -31,14 +31,15 @@ class Big {
 		int GetLength() const;
 		void Resize(int); //количество блоков
 		void Compress();
+		Big Imul(base);
 		friend int Compare(const Big &b, const Big &a);
 
 
 		Big& operator = (const Big &a); // this = a
 		friend Big operator + (Big &b, Big &a);
 		friend Big operator - (Big &b, Big &a); //b-a
+		friend Big operator * (Big &b, Big &a);
 		friend Big& operator / (Big &b, Big &a);
-		friend Big& operator * (Big &a);
 		friend istream& operator >> (istream &in, Big& a);
 		friend ostream& operator << (ostream &out, Big& a);
 };
