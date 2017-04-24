@@ -69,7 +69,7 @@ void Big :: Compress() {
 	}
 }
 
-Big Big :: Imul(base small) {
+Big Big :: Mul(base small) {
 	Big result;
 	doubleBase mask = static_cast<doubleBase>(1) << (sizeof(base)*8);
 	
@@ -83,7 +83,7 @@ Big Big :: Imul(base small) {
 
 	int i;
 	cout << "i=" << GetLength() << endl;
-	for(i=0; i<GetLength(); i++) {
+	for(i = 0; i<GetLength(); i++) {
 		cup = static_cast<doubleBase>(al[i])*static_cast<base>(small) + carry;
 		carry = cup / mask;
 		result.al[i] =  static_cast<base>(cup%mask);
@@ -92,6 +92,36 @@ Big Big :: Imul(base small) {
 	result.al[i] = carry;
 	result.ar++;
 	result.Compress();
+	return result;
+}
+
+Big Big :: Div(base small, base& remainder) {
+	
+	Big result;
+	if(0 == small) {
+		cout << "error" << endl;
+		return result;
+	}
+
+
+	result.Resize( GetCapacity() );
+
+	doubleBase t = 0;
+	doubleBase mask = static_cast<doubleBase>(1) << (sizeof(base)*8);
+	remainder = 0; 
+	
+	result.ar = result.al + result.GetCapacity();
+	for(int i = GetLength() -1; 0 <= i; i--) {
+		t = static_cast<doubleBase>(al[i]) + 
+				static_cast<doubleBase>(remainder) * mask;
+
+		result.ar++;
+		result.al[i] = static_cast<base>(t / small);
+		remainder = static_cast<base>(t % small);
+	}
+
+	result.Compress();
+	cout << "lol" << endl;	
 	return result;
 }
 
@@ -121,9 +151,9 @@ Big& Big ::  operator = (const Big &a) {
 	}
 	
 	this -> ar = this -> al;
-cout << this -> GetLength() << endl;
+//cout << this -> GetLength() << endl;
 	int length = a.GetLength();
-	cout << length << endl;
+	//cout << length << endl;
 	
 	for(int i=0; i<length; i++) {
 		this -> al[i] = a.al[i];
@@ -277,7 +307,7 @@ Big operator * (Big &b, Big &a) {
 	
 	Big result;
 	if(a.GetLength() <= 1) {
-		result = b.Imul(a.al[0]);
+		result = b.Mul(a.al[0]);
 		return result;
 	}
 	result.Resize(b.GetLength() + a.GetLength());
@@ -313,16 +343,30 @@ Big operator * (Big &b, Big &a) {
 
 }
 
+Big operator / (Big &b, Big &a) {
+	Big result;
+	if(a.GetLength() <=1) {
+		base remainder;
+		result = b.Div(a.al[0], remainder);
+		return result;
+	}
+}
+
 ostream& operator << (ostream &out, Big &a) { 
 	int block = sizeof(base)*2; // *8/4 how many numbers in the "base"
 	int length = a.GetLength();
 	int mask = 0xF;
 	char tmp;
-	out << "0x";
-	for(int i = length-1; i >= 0; i--) { //starting from the older
+	unsigned int flag = 1;
+
+	for(int i; 0 <= i; i--) { //starting from the older
 		for(int l = (block-1)*4; l >= 0; l-=4) {
 			tmp = (a.al[i] & (mask << l)) >> l ; //get an each number from the block(one number - four bytes) 
 			if(tmp >= 0 && tmp <= 9) {
+				if(flag && 0 == tmp) {
+					continue;
+				}
+				flag = 0;
 				tmp = tmp + '0';
 				out << tmp;
 			} 
@@ -330,8 +374,12 @@ ostream& operator << (ostream &out, Big &a) {
 				tmp = tmp + 87;
 				out << tmp; 
 			}
-			else cout << "dich" << endl;
+			else cout << "error" << endl;
 		}
+	}
+
+	if(flag) {
+		cout << "0";
 	}
 	out << endl;
 }
@@ -341,10 +389,10 @@ istream& operator >> (istream &in, Big &a) {
 	base tmp_0, tmp_1; //tmp 0 | tmp_1 -> al[i]
 	int index;
 	string string_for_num;
-	cout << "Input num in 16:" << endl;
+//	cout << "Input num in 16:" << endl;
 	in >> string_for_num;
 	int length_s = string_for_num.length(); // includes "0x"
-	int n = (length_s-2) / block + !!((length_s-2) % (block));
+	int n = (length_s) / block + !!((length_s) % (block));
 	if (n > a.GetCapacity()) { 
 		a.Resize(n);
 	} 
@@ -353,7 +401,7 @@ istream& operator >> (istream &in, Big &a) {
 		tmp_1 = 0;
 		for(int i=0; i < block; i++) {
 			index = length_s - k*block - i - 1;
-			if(index < 2) //control start of the string 
+			if(index < 0) //control start of the string 
 				break;
 			char symbol = string_for_num[index]; 
 			if(symbol >= '0' && symbol <= '9') {
