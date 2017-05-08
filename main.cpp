@@ -1,5 +1,5 @@
-#include "big.h"
 #include <time.h>
+#include "big.h"
 #include <stdlib.h>
 
 using namespace BigErrors;
@@ -17,7 +17,7 @@ int main() {
 			//	cout << num1;
 				Big result;
 				result = num.Div(num1, r);
-				cout << result << r;
+				cout << result << hex << r;
 		//		Big result1;
 		//		result1 = result - num;
 			//	cout << result1;

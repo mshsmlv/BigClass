@@ -13,16 +13,21 @@ Big :: Big() {
 }
 
 Big :: ~Big() {
-		if(al)
+		if(al) {
 			delete [] al;
+			al = NULL;
+		}
 }
 
 Big :: Big(Big& old_n) {
-		int capacity = old_n.ah - old_n.al;
-		int length = old_n.ar - old_n.al;
+		int capacity = old_n.ah - old_n.al + 1;
+		int length = old_n.ar - old_n.al + 1;
 		al = new base[capacity];
-		ah = al + capacity;
-		ar = al + length;
+		ah = al + capacity - 1;
+		ar = al + length - 1;
+		for(int i = 0; i < length; i++) {
+			al[i] = old_n.al[i];
+		}
 }
 
 int Big :: Rand(int boundary) {
@@ -45,7 +50,7 @@ int Big :: GetCapacity() const {
 }
 
 int Big :: GetLength() const {
-		return ar - al;
+		return ar - al + 1;
 }
 
 //quantity of boxes
@@ -83,7 +88,7 @@ Big Big :: Mul(base small) {
 
 	int i;
 	cout << "i=" << GetLength() << endl;
-	for(i = 0; i<GetLength(); i++) {
+	for(i = 0; i < GetLength(); i++) {
 		cup = static_cast<doubleBase>(al[i])*static_cast<base>(small) + carry;
 		carry = cup / mask;
 		result.al[i] =  static_cast<base>(cup%mask);
@@ -100,7 +105,6 @@ Big Big :: Div(base small, base& remainder) {
 	Big result;
 	if(0 == small) {
 		cout << "error" << endl;
-		return result;
 	}
 
 
@@ -110,18 +114,24 @@ Big Big :: Div(base small, base& remainder) {
 	doubleBase mask = static_cast<doubleBase>(1) << (sizeof(base)*8);
 	remainder = 0; 
 	
-	result.ar = result.al + result.GetCapacity();
-	for(int i = GetLength() -1; 0 <= i; i--) {
+
+	result.ar = result.al + GetLength() - 1;
+	for(int i = 0; i < result.GetLength(); i++) {
+		result.al[i] = 0; 
+	}
+
+
+	//result.ar = result.al + result.GetCapacity();
+	for(int i = GetLength() - 1; 0 <= i; i--) {
 		t = static_cast<doubleBase>(al[i]) + 
 				static_cast<doubleBase>(remainder) * mask;
 
-		result.ar++;
+	//	result.ar++;
 		result.al[i] = static_cast<base>(t / small);
 		remainder = static_cast<base>(t % small);
 	}
 
 	result.Compress();
-	cout << "lol" << endl;	
 	return result;
 }
 
@@ -359,7 +369,7 @@ ostream& operator << (ostream &out, Big &a) {
 	char tmp;
 	unsigned int flag = 1;
 
-	for(int i; 0 <= i; i--) { //starting from the older
+	for(int i = a.GetLength() - 1; 0 <= i; i--) { //starting from the older
 		for(int l = (block-1)*4; l >= 0; l-=4) {
 			tmp = (a.al[i] & (mask << l)) >> l ; //get an each number from the block(one number - four bytes) 
 			if(tmp >= 0 && tmp <= 9) {
