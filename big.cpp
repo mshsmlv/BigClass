@@ -87,7 +87,6 @@ Big Big :: Mul(base small) {
 	result.ar=result.al;
 
 	int i;
-	cout << "i=" << GetLength() << endl;
 	for(i = 0; i < GetLength(); i++) {
 		cup = static_cast<doubleBase>(al[i])*static_cast<base>(small) + carry;
 		carry = cup / mask;
@@ -245,6 +244,7 @@ Big operator + (Big &b, Big &a) {
 Big operator - (Big &b, Big &a) {
 	int flag = Compare(b, a);
 	if(-1 == flag) {
+		cout << "incompatible_operands" << endl;
 		throw INCOMPATIBLE_OPERANDS;
 	}
 	
@@ -355,11 +355,81 @@ Big operator * (Big &b, Big &a) {
 
 Big operator / (Big &b, Big &a) {
 	Big result;
-	if(a.GetLength() <=1) {
+	if(a.GetLength() <= 1) {
 		base remainder;
 		result = b.Div(a.al[0], remainder);
 		return result;
 	}
+
+	if(Compare(a, b) == 1) {
+		result.al[0] = 0;
+		return result;
+	}
+
+	doubleBase d, mask;
+	mask = static_cast<doubleBase>(1) << (sizeof(base)*8); 	
+	int order_digitA = a.GetLength();
+	d = mask / static_cast<doubleBase>((a.al[order_digitA - 1]) + 1);
+
+	//normalization
+
+	//d is contains base
+	b.Mul(static_cast<base>(d));
+	a.Mul(static_cast<base>(d));
+
+	//the starting initialization
+	int n = a.GetLength();
+	int m = b.GetLength() - n;
+	int j = b.GetLength();
+	doubleBase roof;
+	doubleBase left_part, right_part;
+	Big glass;
+	Big new_num;
+	Big q;
+	q.Resize(b.GetCapacity());
+	new_num.Resize(b.GetCapacity());
+
+	for(j; 0 < j; j--) {
+		roof = (static_cast<doubleBase>(b.al[j])*mask + static_cast<doubleBase>(b.al[j-1])) /
+			static_cast<doubleBase>(a.al[n-1]);
+
+		//checking the inequation
+		while(1) {
+			left_part = static_cast<doubleBase>(a.al[n-2]) * roof;
+			right_part = (static_cast<doubleBase>(b.al[j]) * mask - 
+					roof * static_cast<doubleBase>(a.al[n-1])) * mask +
+				b.al[j-2];
+			if(left_part > right_part) {
+				roof--;
+			}
+			else {
+				break;
+			}
+		}
+
+		//imul and substraction
+		glass = a.Mul(static_cast<base>(roof));
+		new_num.ar = glass.ar;
+		//формируем новое число для вычитания
+		int l = 0;
+		for(int k = j - n; k <= j; k++) {
+			new_num.al[l] = a.al[k];
+			new_num.ar++;		
+			l++;
+		}
+		
+		new_num = new_num - glass;
+		cout << "lol" << endl;
+		
+		l = 0;
+		for(int k = j - n; k <= j; k++) {
+			a.al[k] = new_num.al[l];
+			l++;
+		}
+		q.al[j] = static_cast<base>(roof);
+	}
+	cout << q << endl;
+	return q;
 }
 
 ostream& operator << (ostream &out, Big &a) { 
@@ -431,4 +501,5 @@ istream& operator >> (istream &in, Big &a) {
 		a.al[k] = tmp_0;
 		a.ar++; //changing right range
 	}
+	a.ar--;
 }
