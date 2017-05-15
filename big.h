@@ -35,6 +35,7 @@ class Big {
 		Big Mul(base);
 		Big Div(base, base&);
 		friend int Compare(const Big &b, const Big &a);
+		friend Big Substraction(Big &b, Big &a);
 
 
 		Big& operator = (const Big &a); // this = a
