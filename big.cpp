@@ -176,23 +176,23 @@ Big Substraction(Big &b, Big &a) {
 		cout << "Alength " << alignment.GetLength() << " blength " << b.GetLength() << endl;
 	}
 	return result;
-
 }
 
-Big& Big ::  operator = (const Big &a) {
-	if(this -> GetCapacity() != a.GetCapacity()) {
-		this -> Resize(a.GetCapacity());
+Big& Big :: operator = (const Big &a) {
+	if(GetCapacity() != a.GetCapacity()) {
+		Resize(a.GetCapacity());
 	}
 	
-	this -> ar = this -> al;
+	ar = al;
 //cout << this -> GetLength() << endl;
 	int length = a.GetLength();
 	//cout << length << endl;
 	
 	for(int i=0; i<length; i++) {
-		this -> al[i] = a.al[i];
-		this -> ar++;
+		al[i] = a.al[i];
+		ar++;
 	}
+	ar--;
 }
 
 Big operator + (Big &b, Big &a) {
@@ -232,7 +232,6 @@ Big operator + (Big &b, Big &a) {
 		carry = !!(glass / mask); //for the next digit
 		result.ar++;
 	}
-	cout << " result length " << result.GetLength() << endl;
 	//add tail from array, which longer
 	if(i < ALength) {
 		for(i = i; i < ALength; i++) {
@@ -259,7 +258,6 @@ Big operator + (Big &b, Big &a) {
 			result.ar++;
 	}
 	result.ar--;
-	cout <<" result length " << result.GetLength() << endl;
 	result.Compress();
 	cout << result;
 	return result;
@@ -279,7 +277,6 @@ Big operator - (Big &b, Big &a) {
 	
 	//if they are equal
 	if(0 == flag) {
-		result.ar++;
 		result.al[0] = 0;
 		return result;
 	}
@@ -291,7 +288,7 @@ Big operator - (Big &b, Big &a) {
 	doubleBase glass;
 
 	int i;
-	for(i=0; i < a.GetLength(); i++) {
+	for(i = 0; i < a.GetLength(); i++) {
 
 		result.ar++;
 		cup = a.al[i] + carry;
@@ -304,15 +301,19 @@ Big operator - (Big &b, Big &a) {
 			glass  = static_cast<doubleBase>(b.al[i]) + 
 						mask -
 							cup; 
-			result.al[i] = glass;
+			result.al[i] = static_cast<base>(glass);
+			cout << "result.al[i] " << result.al[i] << hex << endl;
 			carry = 1;
 			given = 0;
 		}
 
 		else {
-			result.al[i] = static_cast<doubleBase>(b.al[i]) - cup;
+			result.al[i] = b.al[i] - static_cast<base>(cup);
+			cout << "result.al[i] " << result.al[i] << hex << endl;
 		}
 	}
+
+	cout << result;
 	
 	for(i; i < b.GetLength(); i++) {
 
@@ -334,6 +335,7 @@ Big operator - (Big &b, Big &a) {
 			result.al[i] = static_cast<doubleBase>(b.al[i]) - carry;
 		}
 	}
+	result.ar--;
 	result.Compress();
 	return result;
 }
