@@ -302,18 +302,15 @@ Big operator - (Big &b, Big &a) {
 						mask -
 							cup; 
 			result.al[i] = static_cast<base>(glass);
-			cout << "result.al[i] " << result.al[i] << hex << endl;
 			carry = 1;
 			given = 0;
 		}
 
 		else {
 			result.al[i] = b.al[i] - static_cast<base>(cup);
-			cout << "result.al[i] " << result.al[i] << hex << endl;
 		}
 	}
 
-	cout << result;
 	
 	for(i; i < b.GetLength(); i++) {
 
@@ -479,7 +476,8 @@ ostream& operator << (ostream &out, Big &a) {
 			} 
 			else if(tmp >= 0xA && tmp <= 0xF) {
 				tmp = tmp + 87;
-				out << tmp; 
+				out << tmp;
+			   	flag = 0;	
 			}
 			else cout << "error" << endl;
 		}
