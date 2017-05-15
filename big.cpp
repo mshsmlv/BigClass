@@ -1,8 +1,6 @@
 #include "big.h"
 #include <stdlib.h>
 
-//#include <string.h>
-
 using namespace BigErrors;
 typedef unsigned int base;
 
@@ -20,6 +18,7 @@ Big :: ~Big() {
 }
 
 Big :: Big(Big& old_n) {
+		cout << "работает конструктор копирования" << endl;
 		int capacity = old_n.ah - old_n.al + 1;
 		int length = old_n.ar - old_n.al + 1;
 		al = new base[capacity];
@@ -154,6 +153,32 @@ int Compare(const Big &b, const Big &a) {
 	return 0;
 }
 
+Big Substraction(Big &b, Big &a) {
+	int flag = Compare(b, a);
+	Big alignment;
+	if(-1 == flag) {
+		alignment.Resize(a.GetCapacity());
+		alignment.ar = alignment.al;
+		int shift = a.GetLength();
+		alignment.al[shift] = static_cast<base>(1);
+		alignment.ar = alignment.al + shift;
+		cout << "incompatible_operands" << endl;
+		b = b + alignment; 
+		cout << "alignment " << alignment;
+		cout <<"before "<< b;
+	}
+
+	Big result;
+	result = b - a;
+	if(-1 == flag) {
+		b = b - alignment;
+		cout << "after " << b;
+		cout << "Alength " << alignment.GetLength() << " blength " << b.GetLength() << endl;
+	}
+	return result;
+
+}
+
 Big& Big ::  operator = (const Big &a) {
 	if(this -> GetCapacity() != a.GetCapacity()) {
 		this -> Resize(a.GetCapacity());
@@ -181,10 +206,10 @@ Big operator + (Big &b, Big &a) {
 	int rcapacity;
 
 	if (ALength <= BLength) {
-		LessLength = BLength;
+		LessLength = ALength;
 	}
 	else {
-		LessLength = ALength;
+		LessLength = BLength;
 	}
 
 	if(a.GetCapacity() <= b.GetCapacity()) {
@@ -201,42 +226,42 @@ Big operator + (Big &b, Big &a) {
 	result.ar = result.al;
 
 	int i;
-	for(i=0; i<LessLength; i++) {
+	for(i = 0; i<LessLength; i++) {
 		glass = static_cast<doubleBase>(b.al[i]) + static_cast<doubleBase>(a.al[i]) + carry;
-		result.ar++;
 		result.al[i] = glass % mask;
 		carry = !!(glass / mask); //for the next digit
+		result.ar++;
 	}
+	cout << " result length " << result.GetLength() << endl;
 	//add tail from array, which longer
 	if(i < ALength) {
-		for(i = ++i; i < ALength; i++) {
+		for(i = i; i < ALength; i++) {
 			glass = a.al[i] + carry;
 			result.al[i] = glass % mask;
 			result.ar++;
 			carry = !!(glass / mask);
-			i++;
 			result.al[i] = a.al[i] + carry;
 		}
 	}
 
 	else if(i < BLength){
-		for(i = ++i; i < BLength; i++) { 
+		for(i = i; i < BLength; i++) { 
 			glass = b.al[i] + carry;
 			result.al[i] = glass % mask;
 			result.ar++;
 			carry = !!(glass / mask);
-			i++;
 			result.al[i] = b.al[i] + carry;
 		}
 	}
-
 
 	if (carry) {//digit carry in
 			result.al[i] = carry;
 			result.ar++;
 	}
-
+	result.ar--;
+	cout <<" result length " << result.GetLength() << endl;
 	result.Compress();
+	cout << result;
 	return result;
 }
 

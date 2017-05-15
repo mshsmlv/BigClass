@@ -17,8 +17,9 @@ int main() {
 			//	cout << num1;
 				Big result;
 			//	result = num.Div(num1, r);
-				result = num / num1;
-				cout << result << hex << r;
+				result = num + num1;
+				cout << "len "  << result.GetLength() << endl;
+				cout << result;
 		//		Big result1;
 		//		result1 = result - num;
 			//	cout << result1;
