@@ -17,7 +17,7 @@ int main() {
 			//	cout << num1;
 				Big result;
 			//	result = num.Div(num1, r);
-				result = num *num1;
+				result = num / num1;
 				cout << result;
 		//		Big result1;
 		//		result1 = result - num;

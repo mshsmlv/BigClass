@@ -54,7 +54,7 @@ int Big :: GetLength() const {
 
 //quantity of boxes
 void Big :: Resize(int new_capacity) {
-		if(this -> GetCapacity() < new_capacity) {
+		if(GetCapacity() < new_capacity) {
 				if(al) 
 					delete [] al;
 				al = new base[new_capacity];
@@ -77,7 +77,7 @@ Big Big :: Mul(base small) {
 	Big result;
 	doubleBase mask = static_cast<doubleBase>(1) << (sizeof(base)*8);
 	
-	if(result.GetCapacity() < this->GetLength() + 1) {
+	if(result.GetCapacity() < GetLength() + 1) {
 		result.Resize(GetLength()+1);
 	}
 
@@ -156,24 +156,19 @@ int Compare(const Big &b, const Big &a) {
 Big Substraction(Big &b, Big &a) {
 	int flag = Compare(b, a);
 	Big alignment;
+	Big result;
 	if(-1 == flag) {
 		alignment.Resize(a.GetCapacity());
 		alignment.ar = alignment.al;
 		int shift = a.GetLength();
 		alignment.al[shift] = static_cast<base>(1);
 		alignment.ar = alignment.al + shift;
-		cout << "incompatible_operands" << endl;
 		b = b + alignment; 
-		cout << "alignment " << alignment;
-		cout <<"before "<< b;
 	}
 
-	Big result;
 	result = b - a;
 	if(-1 == flag) {
 		b = b - alignment;
-		cout << "after " << b;
-		cout << "Alength " << alignment.GetLength() << " blength " << b.GetLength() << endl;
 	}
 	return result;
 }
@@ -184,9 +179,7 @@ Big& Big :: operator = (const Big &a) {
 	}
 	
 	ar = al;
-//cout << this -> GetLength() << endl;
 	int length = a.GetLength();
-	//cout << length << endl;
 	
 	for(int i=0; i<length; i++) {
 		al[i] = a.al[i];
@@ -259,7 +252,6 @@ Big operator + (Big &b, Big &a) {
 	}
 	result.ar--;
 	result.Compress();
-	cout << result;
 	return result;
 }
 
@@ -405,6 +397,7 @@ Big operator / (Big &b, Big &a) {
 	int n = a.GetLength();
 	int m = b.GetLength() - n;
 	int j = b.GetLength();
+	cout << "n= " << n << " m = " << m << endl;
 	doubleBase roof;
 	doubleBase left_part, right_part;
 	Big glass;
@@ -413,7 +406,8 @@ Big operator / (Big &b, Big &a) {
 	q.Resize(b.GetCapacity());
 	new_num.Resize(b.GetCapacity());
 
-	for(j; 0 < j; j--) {
+	for(j; m < j; j--) {
+		cout << "lol" << endl;
 		roof = (static_cast<doubleBase>(b.al[j])*mask + static_cast<doubleBase>(b.al[j-1])) /
 			static_cast<doubleBase>(a.al[n-1]);
 
@@ -424,6 +418,7 @@ Big operator / (Big &b, Big &a) {
 					roof * static_cast<doubleBase>(a.al[n-1])) * mask +
 				b.al[j-2];
 			if(left_part > right_part) {
+				cout << "roof--" << endl;
 				roof--;
 			}
 			else {
@@ -433,26 +428,32 @@ Big operator / (Big &b, Big &a) {
 
 		//imul and substraction
 		glass = a.Mul(static_cast<base>(roof));
-		new_num.ar = glass.ar;
+		new_num.ar = 0;
 		//формируем новое число для вычитания
 		int l = 0;
-		for(int k = j - n; k <= j; k++) {
-			new_num.al[l] = a.al[k];
+		for(int k = j; k >= (j-n); k--) {
+			cout << "формирует новое число" << endl;
+			new_num.al[l] = b.al[k];
 			new_num.ar++;		
 			l++;
 		}
+
+		cout << "new_num = " << new_num << endl;
 		
-		new_num = new_num - glass;
-		cout << "lol" << endl;
+		new_num = Substraction(new_num, glass);
 		
 		l = 0;
-		for(int k = j - n; k <= j; k++) {
-			a.al[k] = new_num.al[l];
+		for(int k = j; k >= (j-n); k--) {
+			b.al[k] = new_num.al[l];
 			l++;
 		}
-		q.al[j] = static_cast<base>(roof);
+
+		cout << "b = " << b << endl;
+		q.al[j-n] = static_cast<base>(roof);
 	}
-	cout << q << endl;
+	q.ar = q.al + n-1;
+	cout << "q = " << q << endl;
+	cout << "b = " << b;
 	return q;
 }
 
@@ -494,9 +495,8 @@ istream& operator >> (istream &in, Big &a) {
 	base tmp_0, tmp_1; //tmp 0 | tmp_1 -> al[i]
 	int index;
 	string string_for_num;
-//	cout << "Input num in 16:" << endl;
 	in >> string_for_num;
-	int length_s = string_for_num.length(); // includes "0x"
+	int length_s = string_for_num.length(); 
 	int n = (length_s) / block + !!((length_s) % (block));
 	if (n > a.GetCapacity()) { 
 		a.Resize(n);
