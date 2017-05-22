@@ -75,6 +75,12 @@ void Big :: Compress() {
 
 Big Big :: Mul(base small) {
 	Big result;
+
+	if(0 == small) {
+		result.al[0] = 0;
+		result.ar = result.al;
+		return result;
+	}
 	doubleBase mask = static_cast<doubleBase>(1) << (sizeof(base)*8);
 	
 	if(result.GetCapacity() < GetLength() + 1) {
@@ -369,7 +375,16 @@ Big operator * (Big &b, Big &a) {
 
 }
 
-Big operator / (Big &b, Big &a) {
+Big operator / (Big &e, Big &c) {
+
+	Big b;
+	Big a;
+	b.Resize(e.GetLength() + 1);
+
+	b = e;
+	a = c;
+	
+	cout << "DELENIE" << endl;
 	Big result;
 	if(a.GetLength() <= 1) {
 		base remainder;
@@ -384,20 +399,27 @@ Big operator / (Big &b, Big &a) {
 
 	doubleBase d, mask;
 	mask = static_cast<doubleBase>(1) << (sizeof(base)*8); 	
-	int order_digitA = a.GetLength();
-	d = mask / static_cast<doubleBase>((a.al[order_digitA - 1]) + 1);
+	int order_digitA = a.GetLength() - 1;
+	cout << "mask: " << hex << mask << endl;
+	cout << "a.al[order]: " << hex << a.al[order_digitA] << endl;
+	d = mask / static_cast<doubleBase>((a.al[order_digitA]) + 1);
+	cout << "d = " << d << endl;
 
 	//normalization
 
 	//d is contains base
-	b.Mul(static_cast<base>(d));
-	a.Mul(static_cast<base>(d));
-
-	//the starting initialization
+	b.al[b.GetLength()] = 0;
+	int j = b.GetLength();
 	int n = a.GetLength();
 	int m = b.GetLength() - n;
-	int j = b.GetLength();
-	cout << "n= " << n << " m = " << m << endl;
+	cout << "n = " << n << " m = " << m << endl;
+	
+	b = b.Mul(static_cast<base>(d));
+	a = a.Mul(static_cast<base>(d));
+cout << "b = " << b << endl;
+cout << "a = " << a << endl;
+
+	//the starting initialization
 	doubleBase roof;
 	doubleBase left_part, right_part;
 	Big glass;
@@ -406,20 +428,24 @@ Big operator / (Big &b, Big &a) {
 	q.Resize(b.GetCapacity());
 	new_num.Resize(b.GetCapacity());
 
-	for(j; m < j; j--) {
-		cout << "lol" << endl;
+	for(j; (n-m) <= j; j--) {
+
+		cout << "========================" << endl;
+		cout << "j = " << j << endl;
 		roof = (static_cast<doubleBase>(b.al[j])*mask + static_cast<doubleBase>(b.al[j-1])) /
 			static_cast<doubleBase>(a.al[n-1]);
 
+		cout << "roof1 = " << roof << endl;
 		//checking the inequation
 		while(1) {
 			left_part = static_cast<doubleBase>(a.al[n-2]) * roof;
-			right_part = (static_cast<doubleBase>(b.al[j]) * mask - 
-					roof * static_cast<doubleBase>(a.al[n-1])) * mask +
-				b.al[j-2];
+			right_part = (static_cast<doubleBase>(b.al[j]) * mask +
+							static_cast<doubleBase>(b.al[j-1]) -  
+					roof * static_cast<doubleBase>(a.al[n-1])) * mask + b.al[j-2];
+			cout << "left_part:" << left_part << endl << "right_part:" << right_part << endl;
 			if(left_part > right_part) {
-				cout << "roof--" << endl;
 				roof--;
+				cout << "roof--" << endl;
 			}
 			else {
 				break;
@@ -427,23 +453,36 @@ Big operator / (Big &b, Big &a) {
 		}
 
 		//imul and substraction
+		cout << endl << "roof = " << roof << endl;
 		glass = a.Mul(static_cast<base>(roof));
-		new_num.ar = 0;
+		cout << "glass = " << glass << endl;
+		new_num.ar = new_num.al;
 		//формируем новое число для вычитания
 		int l = 0;
-		for(int k = j; k >= (j-n); k--) {
+		for(int k = j-n; k < j; k++) {
+			cout << "k=" << k << endl;
 			cout << "формирует новое число" << endl;
 			new_num.al[l] = b.al[k];
 			new_num.ar++;		
 			l++;
 		}
 
+		int storaged_length_new_num = new_num.GetLength();
+
 		cout << "new_num = " << new_num << endl;
 		
 		new_num = Substraction(new_num, glass);
+		cout << "new_num = " << new_num << endl;
+
+		int length_new_num = new_num.GetLength();
+		while(length_new_num < storaged_length_new_num) {
+			new_num.al[length_new_num] = 0;
+			new_num.ar++;
+			length_new_num++;
+		}
 		
 		l = 0;
-		for(int k = j; k >= (j-n); k--) {
+		for(int k = j-n; k <j; k++) {
 			b.al[k] = new_num.al[l];
 			l++;
 		}
