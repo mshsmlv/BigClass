@@ -13,6 +13,8 @@ int main() {
 		//		num1.Rand(110000);
 				cin >> num;
 				cin >> num1;
+				cout << num;
+				cout << num1;
 			//	cout << num;
 			//	cout << num1;
 				Big result;

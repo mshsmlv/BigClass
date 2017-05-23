@@ -99,7 +99,6 @@ Big Big :: Mul(base small) {
 		result.ar++;
 	}
 	result.al[i] = carry;
-	result.ar++;
 	result.Compress();
 	return result;
 }
@@ -159,8 +158,8 @@ int Compare(const Big &b, const Big &a) {
 	return 0;
 }
 
-Big Substraction(Big &b, Big &a) {
-	int flag = Compare(b, a);
+Big Substraction(Big &b, Big &a, int &flag) {
+	flag = Compare(b, a);
 	Big alignment;
 	Big result;
 	if(-1 == flag) {
@@ -286,6 +285,7 @@ Big operator - (Big &b, Big &a) {
 	doubleBase glass;
 
 	int i;
+
 	for(i = 0; i < a.GetLength(); i++) {
 
 		result.ar++;
@@ -306,12 +306,12 @@ Big operator - (Big &b, Big &a) {
 
 		else {
 			result.al[i] = b.al[i] - static_cast<base>(cup);
+			carry = 0;
 		}
 	}
 
-	
 	for(i; i < b.GetLength(); i++) {
-
+		
 		result.ar++;
 		if(static_cast<doubleBase>(b.al[i]) < carry) {
 			given = 1;
@@ -408,16 +408,20 @@ Big operator / (Big &e, Big &c) {
 	//normalization
 
 	//d is contains base
+	int flag; //для компенсирующего сложения
 	b.al[b.GetLength()] = 0;
 	int j = b.GetLength();
 	int n = a.GetLength();
 	int m = b.GetLength() - n;
+	int B_Length = b.GetLength();
 	cout << "n = " << n << " m = " << m << endl;
 	
 	b = b.Mul(static_cast<base>(d));
 	a = a.Mul(static_cast<base>(d));
-cout << "b = " << b << endl;
-cout << "a = " << a << endl;
+	
+	cout << "NORMALIZATION:" << endl;
+	cout << "b = " << b << endl;
+	cout << "a = " << a << endl;
 
 	//the starting initialization
 	doubleBase roof;
@@ -428,9 +432,9 @@ cout << "a = " << a << endl;
 	q.Resize(b.GetCapacity());
 	new_num.Resize(b.GetCapacity());
 
-	for(j; (n-m) <= j; j--) {
+	for(j; (B_Length - m) <= j; j--) {
 
-		cout << "========================" << endl;
+		cout << "=========================================" << endl;
 		cout << "j = " << j << endl;
 		roof = (static_cast<doubleBase>(b.al[j])*mask + static_cast<doubleBase>(b.al[j-1])) /
 			static_cast<doubleBase>(a.al[n-1]);
@@ -456,10 +460,11 @@ cout << "a = " << a << endl;
 		cout << endl << "roof = " << roof << endl;
 		glass = a.Mul(static_cast<base>(roof));
 		cout << "glass = " << glass << endl;
-		new_num.ar = new_num.al;
+		
 		//формируем новое число для вычитания
+		new_num.ar = new_num.al;
 		int l = 0;
-		for(int k = j-n; k < j; k++) {
+		for(int k = j-n; 0 != b.al[k]; k++) {
 			cout << "k=" << k << endl;
 			cout << "формирует новое число" << endl;
 			new_num.al[l] = b.al[k];
@@ -471,18 +476,38 @@ cout << "a = " << a << endl;
 
 		cout << "new_num = " << new_num << endl;
 		
-		new_num = Substraction(new_num, glass);
-		cout << "new_num = " << new_num << endl;
+		//new_num = Substraction(new_num, glass, flag);
+		
+		if(-1 == Compare(new_num, glass)) {
+			cout << "+++++++++++++++++++++++++++++++++++++++++++" << endl;
+			roof--;
+			cout << "сработала кс" << endl;
+			glass = a.Mul(roof);
+			cout << "glass1 = " << glass << endl;
+			cout << "+++++++++++++++++++++++++++++++++++++++++++" << endl;
+		}
+
+		cout << "glass = " << glass << endl;
+		new_num = new_num - glass;
+
+		if(-1 == flag) {
+			roof--;
+			cout << "a = " << a << endl;
+			a = new_num + a;
+			cout << "after кс new_num = " << new_num << endl;
+		}
 
 		int length_new_num = new_num.GetLength();
 		while(length_new_num < storaged_length_new_num) {
+			cout << "добивание нулями" << endl;
 			new_num.al[length_new_num] = 0;
 			new_num.ar++;
 			length_new_num++;
 		}
+		cout << "new_num = " << new_num << endl;
 		
 		l = 0;
-		for(int k = j-n; k <j; k++) {
+		for(int k = j-n; 0 != b.al[k]; k++) {
 			b.al[k] = new_num.al[l];
 			l++;
 		}
@@ -491,6 +516,9 @@ cout << "a = " << a << endl;
 		q.al[j-n] = static_cast<base>(roof);
 	}
 	q.ar = q.al + n-1;
+	//DENORMALIZATION
+	base remaider;
+	b = b.Div(d, remaider);
 	cout << "q = " << q << endl;
 	cout << "b = " << b;
 	return q;
