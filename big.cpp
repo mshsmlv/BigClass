@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 using namespace BigErrors;
-typedef unsigned int base;
+const int DEBUG_MODE = 0;
 
 Big :: Big() {
 		al = new base[100];
@@ -18,7 +18,7 @@ Big :: ~Big() {
 }
 
 Big :: Big(Big& old_n) {
-		cout << "работает конструктор копирования" << endl;
+	//	cout << "работает конструктор копирования" << endl;
 		int capacity = old_n.ah - old_n.al + 1;
 		int length = old_n.ar - old_n.al + 1;
 		al = new base[capacity];
@@ -40,6 +40,7 @@ int Big :: Rand(int boundary) {
 		al[i] =  rand();
 		ar++;
 	}
+	ar--;
 	return 0;
 
 }
@@ -58,7 +59,7 @@ void Big :: Resize(int new_capacity) {
 				if(al) 
 					delete [] al;
 				al = new base[new_capacity];
-				ah = al + new_capacity; //??????????!!!!!!
+				ah = al + new_capacity - 1;
 				ar = al;
 		}
 }
@@ -107,7 +108,14 @@ Big Big :: Div(base small, base& remainder) {
 	
 	Big result;
 	if(0 == small) {
-		cout << "error" << endl;
+		throw DIV_ZERO;
+	}
+
+	if(GetLength() <= 1 && 0 == al[0]) { //comparison with zero
+		result.ar = result.al;
+		result.al[0] = 0;
+		remainder = small;
+		return result;
 	}
 
 
@@ -124,14 +132,12 @@ Big Big :: Div(base small, base& remainder) {
 	}
 
 
-	//result.ar = result.al + result.GetCapacity();
 	for(int i = GetLength() - 1; 0 <= i; i--) {
 		t = static_cast<doubleBase>(al[i]) + 
 				static_cast<doubleBase>(remainder) * mask;
 
-	//	result.ar++;
 		result.al[i] = static_cast<base>(t / small);
-		remainder = static_cast<base>(t % small);
+		remainder = static_cast<base>(t % static_cast<doubleBase>(small));
 	}
 
 	result.Compress();
@@ -143,6 +149,11 @@ int Compare(const Big &b, const Big &a) {
 		return 1;
 	}
 	else if(b.GetLength() < a.GetLength()) {
+		//	cout << "b = " << b.GetLength() << endl;
+
+		//	cout << "a = " << a.GetLength() << endl;
+
+		//	cout << "ушел отсюда " << endl;
 			return -1;
 		}
 
@@ -158,25 +169,6 @@ int Compare(const Big &b, const Big &a) {
 	return 0;
 }
 
-Big Substraction(Big &b, Big &a, int &flag) {
-	flag = Compare(b, a);
-	Big alignment;
-	Big result;
-	if(-1 == flag) {
-		alignment.Resize(a.GetCapacity());
-		alignment.ar = alignment.al;
-		int shift = a.GetLength();
-		alignment.al[shift] = static_cast<base>(1);
-		alignment.ar = alignment.al + shift;
-		b = b + alignment; 
-	}
-
-	result = b - a;
-	if(-1 == flag) {
-		b = b - alignment;
-	}
-	return result;
-}
 
 Big& Big :: operator = (const Big &a) {
 	if(GetCapacity() != a.GetCapacity()) {
@@ -200,6 +192,8 @@ Big operator + (Big &b, Big &a) {
 	int carry = 0; //at the begin of addition
 	int BLength = b.GetLength();
 	int ALength = a.GetLength();
+	//cout << "BLENGTH = " << BLength << endl;
+	//cout << "ALENGTH = " << ALength << endl;
 	int LessLength;
 	int rcapacity;
 
@@ -224,30 +218,34 @@ Big operator + (Big &b, Big &a) {
 	result.ar = result.al;
 
 	int i;
-	for(i = 0; i<LessLength; i++) {
+	for(i = 0; i < LessLength; i++) {
 		glass = static_cast<doubleBase>(b.al[i]) + static_cast<doubleBase>(a.al[i]) + carry;
 		result.al[i] = glass % mask;
+		//cout << "r.al[i] = " << hex << result.al[i] << endl;
 		carry = !!(glass / mask); //for the next digit
 		result.ar++;
 	}
 	//add tail from array, which longer
 	if(i < ALength) {
+		//cout << "ALENGTH" << endl;
 		for(i = i; i < ALength; i++) {
 			glass = a.al[i] + carry;
 			result.al[i] = glass % mask;
 			result.ar++;
 			carry = !!(glass / mask);
-			result.al[i] = a.al[i] + carry;
 		}
 	}
 
 	else if(i < BLength){
+		//cout << "BLENGTH" << endl;
 		for(i = i; i < BLength; i++) { 
 			glass = b.al[i] + carry;
+		//	cout << "glass = " << hex << glass << endl;
 			result.al[i] = glass % mask;
+		//	cout << "sdgsdfgdsg = " << hex << result.al[i] << endl;
 			result.ar++;
 			carry = !!(glass / mask);
-			result.al[i] = b.al[i] + carry;
+		//cout << "result " << result << endl;
 		}
 	}
 
@@ -349,10 +347,12 @@ Big operator * (Big &b, Big &a) {
 	doubleBase carry = 0;
 
 	//filling with zeros
-	for(int i=0; i<result.GetCapacity(); i++) {
+	for(int i = 0; i<result.GetCapacity(); i++) {
 		result.al[i] = 0;
 		result.ar++;
 	}
+	result.ar--;
+//cout << "result length from function = " << result.GetLength() << endl; 
 
 	int i, j;
 	for (j = 0; j < a.GetLength(); j++) { 
@@ -375,7 +375,7 @@ Big operator * (Big &b, Big &a) {
 
 }
 
-Big operator / (Big &e, Big &c) {
+Big Division(Big &e, Big &c, Big &remainder) {
 
 	Big b;
 	Big a;
@@ -383,46 +383,69 @@ Big operator / (Big &e, Big &c) {
 
 	b = e;
 	a = c;
-	
-	cout << "DELENIE" << endl;
+
+	if(DEBUG_MODE) {
+		cout << "b = " << b << endl;
+		cout << "c = " << c << endl;
+		cout << "DELENIE" << endl;
+	}
 	Big result;
+
+	if(-1 == Compare(b,c)) {
+		result.ar = result.al;
+		result.al[0] = 0;
+		remainder = b;
+		return result;
+	}
+
 	if(a.GetLength() <= 1) {
-		base remainder;
-		result = b.Div(a.al[0], remainder);
+		base r;
+		result = b.Div(a.al[0], r);
+		remainder.al[0] = r;
+		remainder.ar = remainder.al;
 		return result;
 	}
 
 	if(Compare(a, b) == 1) {
 		result.al[0] = 0;
+		result.ar = result.al;
+		remainder.al[0] = 0;
+		remainder.ar = remainder.al;
 		return result;
 	}
 
 	doubleBase d, mask;
 	mask = static_cast<doubleBase>(1) << (sizeof(base)*8); 	
 	int order_digitA = a.GetLength() - 1;
-	cout << "mask: " << hex << mask << endl;
-	cout << "a.al[order]: " << hex << a.al[order_digitA] << endl;
 	d = mask / static_cast<doubleBase>((a.al[order_digitA]) + 1);
-	cout << "d = " << d << endl;
 
+	if(DEBUG_MODE) {
+		cout << "a.al[order]: " << hex << a.al[order_digitA] << endl;
+		cout << "mask: " << hex << mask << endl;
+		cout << "d = " << d << endl;
+	}
+	
 	//normalization
-
 	//d is contains base
-	int flag; //для компенсирующего сложения
 	b.al[b.GetLength()] = 0;
 	int j = b.GetLength();
 	int n = a.GetLength();
 	int m = b.GetLength() - n;
 	int B_Length = b.GetLength();
-	cout << "n = " << n << " m = " << m << endl;
+	
+	if(DEBUG_MODE) {
+		cout << "n = " << n << " m = " << m << endl;
+	}	
 	
 	b = b.Mul(static_cast<base>(d));
 	a = a.Mul(static_cast<base>(d));
-	
-	cout << "NORMALIZATION:" << endl;
-	cout << "b = " << b << endl;
-	cout << "a = " << a << endl;
 
+	if(DEBUG_MODE) {	
+		cout << "NORMALIZATION:" << endl;
+		cout << "b = " << b << endl;
+		cout << "a = " << a << endl;
+	}
+	
 	//the starting initialization
 	doubleBase roof;
 	doubleBase left_part, right_part;
@@ -431,25 +454,46 @@ Big operator / (Big &e, Big &c) {
 	Big q;
 	q.Resize(b.GetCapacity());
 	new_num.Resize(b.GetCapacity());
+	q.ar = q.al + m + 1;
+	for(int i = 0; i < q.GetLength(); i++) {
+		q.al[i] = 0;
+	}
 
 	for(j; (B_Length - m) <= j; j--) {
 
-		cout << "=========================================" << endl;
-		cout << "j = " << j << endl;
+		if(DEBUG_MODE) {
+			cout << "=========================================" << endl;
+			cout << "j = " << j << endl;
+		}
 		roof = (static_cast<doubleBase>(b.al[j])*mask + static_cast<doubleBase>(b.al[j-1])) /
 			static_cast<doubleBase>(a.al[n-1]);
 
-		cout << "roof1 = " << roof << endl;
+		if(DEBUG_MODE) {
+			cout << "roof1 = " << hex << roof << endl;
+			cout << "a.al[n-2]: " << hex << a.al[n-2] << endl;
+			cout << "b.al[j]: " << hex << b.al[j] << endl;
+			cout << "b.al[j-1]: " << hex << b.al[j-1] << endl;
+			cout << "b.al[j-2]: " << hex << b.al[j-2] << endl;
+		}
 		//checking the inequation
+		//здесь будем отслеживать переполнение правой части
 		while(1) {
 			left_part = static_cast<doubleBase>(a.al[n-2]) * roof;
-			right_part = (static_cast<doubleBase>(b.al[j]) * mask +
-							static_cast<doubleBase>(b.al[j-1]) -  
-					roof * static_cast<doubleBase>(a.al[n-1])) * mask + b.al[j-2];
-			cout << "left_part:" << left_part << endl << "right_part:" << right_part << endl;
+			right_part = static_cast<doubleBase>(b.al[j]) * mask + 
+							static_cast<doubleBase>(b.al[j-1]) -  roof * 
+								static_cast<doubleBase>(a.al[n-1]);
+			if(right_part & mask) {
+				if(DEBUG_MODE) cout << "переполнение правой части " << endl;
+				break; // дальнейшее умножение приведет к переполнению doubleBase
+			}
+
+			right_part = right_part * mask + b.al[j-2];
+			if(DEBUG_MODE) {
+				cout << "left_part:" << left_part << endl << "right_part:" << right_part << endl;
+			}
 			if(left_part > right_part) {
 				roof--;
-				cout << "roof--" << endl;
+				if(DEBUG_MODE) cout << "roof--" << endl;
 			}
 			else {
 				break;
@@ -457,16 +501,22 @@ Big operator / (Big &e, Big &c) {
 		}
 
 		//imul and substraction
-		cout << endl << "roof = " << roof << endl;
+	if(DEBUG_MODE) 	cout << endl << "roof = " << roof << endl;
 		glass = a.Mul(static_cast<base>(roof));
-		cout << "glass = " << glass << endl;
+	if(DEBUG_MODE) 	cout << "glass = " << glass << endl;
 		
 		//формируем новое число для вычитания
 		new_num.ar = new_num.al;
 		int l = 0;
-		for(int k = j-n; 0 != b.al[k]; k++) {
-			cout << "k=" << k << endl;
-			cout << "формирует новое число" << endl;
+		base flag = 1;
+		for(int k = j-n; b.al[k] | flag; k++) {
+			if(0 != b.al[k]) {
+				flag = 0;
+			}
+			if(DEBUG_MODE) {
+				cout << "k=" << k << endl;
+				cout << "формирует новое число" << endl;
+			}
 			new_num.al[l] = b.al[k];
 			new_num.ar++;		
 			l++;
@@ -474,62 +524,65 @@ Big operator / (Big &e, Big &c) {
 
 		int storaged_length_new_num = new_num.GetLength();
 
-		cout << "new_num = " << new_num << endl;
+	if(DEBUG_MODE) 	cout << "new_num = " << new_num << endl;
 		
-		//new_num = Substraction(new_num, glass, flag);
 		
 		if(-1 == Compare(new_num, glass)) {
-			cout << "+++++++++++++++++++++++++++++++++++++++++++" << endl;
 			roof--;
-			cout << "сработала кс" << endl;
-			glass = a.Mul(roof);
-			cout << "glass1 = " << glass << endl;
-			cout << "+++++++++++++++++++++++++++++++++++++++++++" << endl;
+			if(DEBUG_MODE){
+				cout << "+++++++++++++++++++++++++++++++++++++++++++" << endl;
+				cout << "roof = " << roof << endl;
+			}
+			glass = a.Mul(static_cast<base>(roof));
+			if(DEBUG_MODE) {
+				cout << "glass1 = " << glass << endl;
+				cout << "new_num = " << new_num << endl;
+				cout << "+++++++++++++++++++++++++++++++++++++++++++" << endl;
+			}
 		}
 
-		cout << "glass = " << glass << endl;
+		if(DEBUG_MODE)	cout << "glass = " << glass << endl;
 		new_num = new_num - glass;
 
-		if(-1 == flag) {
-			roof--;
-			cout << "a = " << a << endl;
-			a = new_num + a;
-			cout << "after кс new_num = " << new_num << endl;
-		}
 
 		int length_new_num = new_num.GetLength();
 		while(length_new_num < storaged_length_new_num) {
-			cout << "добивание нулями" << endl;
+			if(DEBUG_MODE)	cout << "добивание нулями" << endl;
 			new_num.al[length_new_num] = 0;
 			new_num.ar++;
 			length_new_num++;
 		}
-		cout << "new_num = " << new_num << endl;
+		if(DEBUG_MODE) cout << "new_num = " << new_num << endl;
 		
 		l = 0;
-		for(int k = j-n; 0 != b.al[k]; k++) {
+		flag = 1;
+		for(int k = j-n; b.al[k] | flag; k++) {
+			if(0 != b.al[k]) {
+				flag = 0;
+			}
 			b.al[k] = new_num.al[l];
 			l++;
 		}
 
-		cout << "b = " << b << endl;
+		if(DEBUG_MODE) cout << "b = " << b << endl;
 		q.al[j-n] = static_cast<base>(roof);
 	}
-	q.ar = q.al + n-1;
 	//DENORMALIZATION
-	base remaider;
-	b = b.Div(d, remaider);
-	cout << "q = " << q << endl;
-	cout << "b = " << b;
+	base r;
+	b = b.Div(d, r);
+	q.Compress();
+	if(DEBUG_MODE) cout << "q = " << q << endl;
+	remainder = b;
 	return q;
 }
 
-ostream& operator << (ostream &out, Big &a) { 
+ostream& operator << (ostream &out, Big &a) {
 	int block = sizeof(base)*2; // *8/4 how many numbers in the "base"
 	int length = a.GetLength();
 	int mask = 0xF;
 	char tmp;
 	unsigned int flag = 1;
+
 
 	for(int i = a.GetLength() - 1; 0 <= i; i--) { //starting from the older
 		for(int l = (block-1)*4; l >= 0; l-=4) {
@@ -547,14 +600,16 @@ ostream& operator << (ostream &out, Big &a) {
 				out << tmp;
 			   	flag = 0;	
 			}
-			else cout << "error" << endl;
+			else throw INCORRECT_SYMBOL;
 		}
 	}
 
+
 	if(flag) {
-		cout << "0";
+		out << "0";
 	}
-	out << endl;
+//	out << endl;
+	return out;
 }
 
 istream& operator >> (istream &in, Big &a) {
@@ -594,4 +649,5 @@ istream& operator >> (istream &in, Big &a) {
 		a.ar++; //changing right range
 	}
 	a.ar--;
+	return in;
 }
