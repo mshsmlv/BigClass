@@ -6,6 +6,7 @@ using namespace BigErrors;
 
 int main() {
 		try {
+				srand(time(NULL));
 				for(int i = 0; i < 100; i++) {
 					cout << i << endl;
 					Big num;
@@ -14,8 +15,8 @@ int main() {
 					Big result;
 					Big result1;
 					Big result_be;
-					num.Rand(100001);
-					num1.Rand(80);
+					num.Rand(20000);
+					num1.Rand(10000);
 					result = Division(num, num1, rem);
 					result_be= result * num1; 
 					result1 = result_be + rem;

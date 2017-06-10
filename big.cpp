@@ -406,14 +406,6 @@ Big Division(Big &e, Big &c, Big &remainder) {
 		return result;
 	}
 
-	if(Compare(a, b) == 1) {
-		result.al[0] = 0;
-		result.ar = result.al;
-		remainder.al[0] = 0;
-		remainder.ar = remainder.al;
-		return result;
-	}
-
 	doubleBase d, mask;
 	mask = static_cast<doubleBase>(1) << (sizeof(base)*8); 	
 	int order_digitA = a.GetLength() - 1;
@@ -479,15 +471,15 @@ Big Division(Big &e, Big &c, Big &remainder) {
 		//здесь будем отслеживать переполнение правой части
 		while(1) {
 			left_part = static_cast<doubleBase>(a.al[n-2]) * roof;
-			right_part = static_cast<doubleBase>(b.al[j]) * mask + 
+			right_part = (static_cast<doubleBase>(b.al[j]) << sizeof(base)*8) + 
 							static_cast<doubleBase>(b.al[j-1]) -  roof * 
 								static_cast<doubleBase>(a.al[n-1]);
-			if(right_part & mask) {
+			if(right_part >> sizeof(base)*8) {
 				if(DEBUG_MODE) cout << "переполнение правой части " << endl;
 				break; // дальнейшее умножение приведет к переполнению doubleBase
 			}
 
-			right_part = right_part * mask + b.al[j-2];
+			right_part = (right_part << sizeof(base)*8) + b.al[j-2];
 			if(DEBUG_MODE) {
 				cout << "left_part:" << left_part << endl << "right_part:" << right_part << endl;
 			}
@@ -529,17 +521,24 @@ Big Division(Big &e, Big &c, Big &remainder) {
 		
 		if(-1 == Compare(new_num, glass)) {
 			roof--;
+		glass = a.Mul(static_cast<base>(roof));
+		cout << Compare(new_num, glass) << " 1 раз "  << endl;
+		}
+			if(-1 == Compare(new_num,glass)) {
+				roof--;
+				glass = a.Mul(static_cast<base>(roof));
+				cout << Compare(new_num, glass) << " 2 раз "  << endl;
+			}
 			if(DEBUG_MODE){
 				cout << "+++++++++++++++++++++++++++++++++++++++++++" << endl;
 				cout << "roof = " << roof << endl;
 			}
-			glass = a.Mul(static_cast<base>(roof));
 			if(DEBUG_MODE) {
 				cout << "glass1 = " << glass << endl;
 				cout << "new_num = " << new_num << endl;
 				cout << "+++++++++++++++++++++++++++++++++++++++++++" << endl;
 			}
-		}
+		
 
 		if(DEBUG_MODE)	cout << "glass = " << glass << endl;
 		new_num = new_num - glass;
