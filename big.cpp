@@ -169,6 +169,15 @@ int Compare(const Big &b, const Big &a) {
 	return 0;
 }
 
+int CompareWithZero(const Big &a) {
+	for(int i = a.GetLength()-1; 0 <= i; i--) {
+			if(a.al[i] != 0) {
+				return false;
+			}
+	}
+	return true;
+}
+
 
 Big& Big :: operator = (const Big &a) {
 	if(GetCapacity() != a.GetCapacity()) {
@@ -376,7 +385,7 @@ Big operator * (Big &b, Big &a) {
 }
 
 Big Division(Big &e, Big &c, Big &remainder) {
-
+	
 	Big b;
 	Big a;
 	b.Resize(e.GetLength() + 1);
@@ -518,26 +527,31 @@ Big Division(Big &e, Big &c, Big &remainder) {
 
 	if(DEBUG_MODE) 	cout << "new_num = " << new_num << endl;
 		
-		
-		if(-1 == Compare(new_num, glass)) {
+		while(-1 == Compare(new_num, glass)) {
+			cout << roof << endl;
 			roof--;
-		glass = a.Mul(static_cast<base>(roof));
-		cout << Compare(new_num, glass) << " 1 раз "  << endl;
+			cout << "glas --- " << endl;
+			cout << "glass " << glass << endl;
+			glass = a.Mul(static_cast<base>(roof));
+			cout << "glass1 " << glass << endl;
+			
+			cout << "new_num " << new_num << endl;
+			cout << roof << endl;
+
+
+			cout << b << endl;
+			cout << a << endl;
+			exit(0);
 		}
-			if(-1 == Compare(new_num,glass)) {
-				roof--;
-				glass = a.Mul(static_cast<base>(roof));
-				cout << Compare(new_num, glass) << " 2 раз "  << endl;
-			}
-			if(DEBUG_MODE){
-				cout << "+++++++++++++++++++++++++++++++++++++++++++" << endl;
-				cout << "roof = " << roof << endl;
-			}
-			if(DEBUG_MODE) {
-				cout << "glass1 = " << glass << endl;
-				cout << "new_num = " << new_num << endl;
-				cout << "+++++++++++++++++++++++++++++++++++++++++++" << endl;
-			}
+	if(DEBUG_MODE){
+		cout << "+++++++++++++++++++++++++++++++++++++++++++" << endl;
+		cout << "roof = " << roof << endl;
+	}
+	if(DEBUG_MODE) {
+		cout << "glass1 = " << glass << endl;
+		cout << "new_num = " << new_num << endl;
+		cout << "+++++++++++++++++++++++++++++++++++++++++++" << endl;
+	}
 		
 
 		if(DEBUG_MODE)	cout << "glass = " << glass << endl;
