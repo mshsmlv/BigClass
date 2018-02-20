@@ -6,8 +6,8 @@ const int DEBUG_MODE = 0;
 
 Big ::Big()
 {
-    al = new base[1025];
-    ah = al + 1025 - 1;
+    al = new base[1030];
+    ah = al + 1030 - 1;
     ar = al;
 }
 
@@ -314,6 +314,7 @@ Big operator-(Big &b, Big &a)
         else {
             result.al[i] = b.al[i] - static_cast<base>(cup);
             carry = 0;
+            given = 0;
         }
     }
 
@@ -332,6 +333,8 @@ Big operator-(Big &b, Big &a)
 
         else {
             result.al[i] = static_cast<doubleBase>(b.al[i]) - carry;
+            carry = 0;
+            given = 0;
         }
     }
     result.ar--;
