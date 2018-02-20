@@ -2,12 +2,12 @@
 #include <stdlib.h>
 
 using namespace BigErrors;
-const int DEBUG_MODE = 1;
+const int DEBUG_MODE = 0;
 
 Big ::Big()
 {
-    al = new base[100];
-    ah = al + 100 - 1;
+    al = new base[1025];
+    ah = al + 1025 - 1;
     ar = al;
 }
 
@@ -55,32 +55,6 @@ int Big ::GetCapacity() const
 int Big ::GetLength() const
 {
     return ar - al + 1;
-}
-
-void Big ::ResizeWithSave(int new_capacity)
-{
-    if (GetCapacity() < new_capacity) {
-        std::cout << "отладка богов" << std::endl;
-        base *new_al = new base[new_capacity];
-        base *new_ah = new_al + new_capacity - 1;
-        base *new_ar = new_al;
-
-        int i;
-        for (i = 0; (al + i) < ar; i++) {
-            new_al[i] = al[i];
-        }
-
-        for (i; (al + i) <= ah; i++) {
-            new_al[i] = 0;
-        }
-
-        if (al) {
-            delete[] al;
-            al = new_al;
-            ar = new_ar;
-            ah = new_ah;
-        }
-    }
 }
 
 // quantity of boxes
@@ -416,6 +390,7 @@ Big Division(Big &e, Big &c, Big &remainder)
     int j = 0;
     int n = b.GetLength();
     int m = a.GetLength() - n;
+    int flag;  //для 4 шага
 
     a.Resize(a.GetLength() + 1);
 
@@ -426,12 +401,27 @@ Big Division(Big &e, Big &c, Big &remainder)
 
     // TODO если b > a и если на ноль деление
 
+    if (CompareWithZero(e)) {
+        result.ar = result.al + 1;
+        result.al[0] = 0;
+        remainder.ar = remainder.al + 1;
+        remainder.al[0] = 0;
+        return result;
+    }
+
+    if (-1 == Compare(e, c)) {
+        result.ar = result.al;
+        result.al[0] = 0;
+        remainder = e;
+        return result;
+    }
+
     //если деление на базу
     if (b.GetLength() <= 1) {
         base r;
         result = a.Div(b.al[0], r);
         remainder.al[0] = r;
-        remainder.ar++;
+        remainder.ar = remainder.al;
         return result;
     }
 
@@ -446,11 +436,13 @@ Big Division(Big &e, Big &c, Big &remainder)
                   << "(0x" << std::hex << b.al[b.GetLength() - 1] << "+1)" << std::endl;
     }
 
-    // a.al[a.GetLength() - 1] = 0;
     a = a.Mul(static_cast<base>(d));
     if (a.GetLength() == e.GetLength()) {
-        a.ResizeWithSave(a.GetLength() + 1);
-        std::cout << "blya" << std::endl;
+        if (DEBUG_MODE) {
+            std::cout << "d = 1" << std::endl;
+        }
+        a.ar++;
+        a.al[a.GetLength() - 1] = 0;
     }
     b = b.Mul(static_cast<base>(d));
 
@@ -484,16 +476,18 @@ Big Division(Big &e, Big &c, Big &remainder)
     base aj, aj1, aj2;
     for (j = 0; j <= m; j++) {
         aj = a.al[a.GetLength() - j - 1];
-        aj1 = a.al[a.GetLength() - j - 1 + 1];
-        aj2 = a.al[a.GetLength() - j - 1 + 2];
+        aj1 = a.al[a.GetLength() - j - 1 - 1];
+        aj2 = a.al[a.GetLength() - j - 1 - 2];
 
         if (DEBUG_MODE) {
             std::cout << "====================================" << std::endl;
             std::cout << "j = " << j << std::endl;
             std::cout << "a[j] = " << aj << std::endl;
+            std::cout << "a[j+1] = " << aj1 << std::endl;
+            std::cout << "a[j+2] = " << aj2 << std::endl;
         }
 
-        if (a.al[a.GetLength() - j] == b1) {
+        if (aj == b1) {
             roof = mask - 1;
         } else {
             if (DEBUG_MODE) {
@@ -509,7 +503,7 @@ Big Division(Big &e, Big &c, Big &remainder)
 
         //проверка неравенства
 
-        do {
+        while (1) {
             left_part = static_cast<doubleBase>(b2) * roof;
 
             right_part =
@@ -520,12 +514,15 @@ Big Division(Big &e, Big &c, Big &remainder)
             if (right_part >> sizeof(base) * 8) {
                 break;
             }
-            right_part = right_part * mask + static_cast<doubleBase>(b2);
-            roof--;
-            if (DEBUG_MODE) {
-                std::cout << "roof--" << std::endl;
-            }
-        } while (left_part > right_part);
+            right_part = right_part * mask + static_cast<doubleBase>(aj2);
+            if (left_part > right_part) {
+                roof--;
+                if (DEBUG_MODE) {
+                    std::cout << "roof--" << std::endl;
+                }
+            } else
+                break;
+        }
 
         if (DEBUG_MODE) {
             std::cout << "roof = 0x" << std::hex << roof << std::endl;
@@ -544,11 +541,13 @@ Big Division(Big &e, Big &c, Big &remainder)
             std::cout << "new_num = 0x" << new_num << std::endl;
         }
 
+        flag = 0;
         glass = b.Mul(static_cast<base>(roof));
         while (-1 == Compare(new_num, glass)) {
             cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
             cout << "roof " << hex << roof << endl;
             roof--;
+            flag = 1;
             //	cout << "glas --- " << endl;
             cout << "glass = " << glass << endl;
             glass = b.Mul(static_cast<base>(roof));
@@ -562,11 +561,52 @@ Big Division(Big &e, Big &c, Big &remainder)
             exit(0);
         }
 
+        int stored_length_new_num = new_num.GetLength();
         new_num = new_num - glass;
-        if (DEBUG_MODE) {
-            std::cout << "после вычитания new_num:"
+
+        if (stored_length_new_num > new_num.GetLength()) {
+            for (int i = new_num.GetLength(); i < stored_length_new_num; i++) {
+                new_num.al[i] = 0;
+                new_num.ar++;
+            }
         }
+
+        if (DEBUG_MODE) {
+            std::cout << "после вычитания new_num:" << std::endl;
+            std::cout << "0x" << new_num << std::endl;
+        }
+
+        for (int i = 0; i <= n; i++) {
+            a.al[a.GetLength() - j - 1 - i] = new_num.al[n - i];
+        }
+
+        if (DEBUG_MODE) {
+            std::cout << "переписали new_num в a:" << std::endl;
+            std::cout << "0x" << a << std::endl;
+        }
+
+        if (flag) {
+            if (DEBUG_MODE) {
+                std::cout << "шаг 4 был отрицательный" << std::endl;
+            }
+            roof--;
+            a = a + b;
+        }
+        q.al[m - j] = static_cast<base>(roof);
     }
+
+    base r;
+    a = a.Div(d, r);
+    q.Compress();
+
+    if (DEBUG_MODE) {
+        std::cout << "частное = 0x" << q << std::endl;
+        std::cout << "остаток = 0x" << a << std::endl;
+    }
+
+    // std::cout << "отладка богов" << std::endl;
+    remainder = a;
+    return q;
 }
 
 ostream &operator<<(ostream &out, Big &a)

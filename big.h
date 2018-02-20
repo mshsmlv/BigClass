@@ -30,7 +30,6 @@ public:
     int Rand(int bound);
     int GetCapacity() const;
     int GetLength() const;
-    void ResizeWithSave(int);
     void Resize(int);  //количество блоков
     void Compress();
     Big Mul(base);
