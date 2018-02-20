@@ -57,6 +57,32 @@ int Big ::GetLength() const
     return ar - al + 1;
 }
 
+void Big ::ResizeWithSave(int new_capacity)
+{
+    if (GetCapacity() < new_capacity) {
+        std::cout << "отладка богов" << std::endl;
+        base *new_al = new base[new_capacity];
+        base *new_ah = new_al + new_capacity - 1;
+        base *new_ar = new_al;
+
+        int i;
+        for (i = 0; (al + i) < ar; i++) {
+            new_al[i] = al[i];
+        }
+
+        for (i; (al + i) <= ah; i++) {
+            new_al[i] = 0;
+        }
+
+        if (al) {
+            delete[] al;
+            al = new_al;
+            ar = new_ar;
+            ah = new_ah;
+        }
+    }
+}
+
 // quantity of boxes
 void Big ::Resize(int new_capacity)
 {
@@ -379,8 +405,168 @@ Big operator*(Big &b, Big &a)
     return result;
 }
 
+// e/c
 Big Division(Big &e, Big &c, Big &remainder)
 {
+    Big a, b, result;
+
+    a = e;
+    b = c;
+
+    int j = 0;
+    int n = b.GetLength();
+    int m = a.GetLength() - n;
+
+    a.Resize(a.GetLength() + 1);
+
+    if (DEBUG_MODE) {
+        std::cout << "a = 0x" << a << std::endl;
+        std::cout << "b = 0x" << b << std::endl;
+    }
+
+    // TODO если b > a и если на ноль деление
+
+    //если деление на базу
+    if (b.GetLength() <= 1) {
+        base r;
+        result = a.Div(b.al[0], r);
+        remainder.al[0] = r;
+        remainder.ar++;
+        return result;
+    }
+
+    doubleBase d, mask;
+    mask = static_cast<doubleBase>(1) << (sizeof(base) * 8);
+    d = mask / static_cast<doubleBase>(b.al[b.GetLength() - 1] + 1);
+
+    /*NORMALIZATION*/
+    //считаем d
+    if (DEBUG_MODE) {
+        std::cout << "0x" << std::hex << d << " = 0x" << mask << "/"
+                  << "(0x" << std::hex << b.al[b.GetLength() - 1] << "+1)" << std::endl;
+    }
+
+    // a.al[a.GetLength() - 1] = 0;
+    a = a.Mul(static_cast<base>(d));
+    if (a.GetLength() == e.GetLength()) {
+        a.ResizeWithSave(a.GetLength() + 1);
+        std::cout << "blya" << std::endl;
+    }
+    b = b.Mul(static_cast<base>(d));
+
+    if (DEBUG_MODE) {
+        std::cout << "NORMALIZATION:" << std::endl;
+        std::cout << "a = 0x" << a << std::endl;
+        std::cout << "b = 0x" << b << std::endl << std::endl;
+
+        std::cout << "начинаем делить:" << std::endl;
+        std::cout << "n = " << n << std::endl;
+        std::cout << "m = " << m << std::endl;
+    }
+
+    doubleBase roof, left_part, right_part;
+    Big glass, new_num, q;
+
+    q.ar = q.al + m + 1;
+
+    for (int i = 0; i < q.GetLength(); i++) {
+        q.al[i] = 0;
+    }
+
+    base b1 = b.al[b.GetLength() - 1];
+    base b2 = b.al[b.GetLength() - 2];
+
+    if (DEBUG_MODE) {
+        std::cout << "b1 = 0x" << std::hex << b1 << std::endl;
+        std::cout << "b2 = 0x" << std::hex << b2 << std::endl;
+    }
+
+    base aj, aj1, aj2;
+    for (j = 0; j <= m; j++) {
+        aj = a.al[a.GetLength() - j - 1];
+        aj1 = a.al[a.GetLength() - j - 1 + 1];
+        aj2 = a.al[a.GetLength() - j - 1 + 2];
+
+        if (DEBUG_MODE) {
+            std::cout << "====================================" << std::endl;
+            std::cout << "j = " << j << std::endl;
+            std::cout << "a[j] = " << aj << std::endl;
+        }
+
+        if (a.al[a.GetLength() - j] == b1) {
+            roof = mask - 1;
+        } else {
+            if (DEBUG_MODE) {
+                std::cout << "(0x" << std::hex << aj << "*0x" << std::hex << mask << "+0x" << std::hex << aj1 << ")/0x"
+                          << std::hex << b1 << std::endl;
+            }
+            roof = (static_cast<doubleBase>(aj) * static_cast<doubleBase>(mask) + static_cast<doubleBase>(aj1)) /
+                static_cast<doubleBase>(b1);
+            if (DEBUG_MODE) {
+                std::cout << "=0x" << std::hex << roof << std::endl;
+            }
+        }
+
+        //проверка неравенства
+
+        do {
+            left_part = static_cast<doubleBase>(b2) * roof;
+
+            right_part =
+                static_cast<doubleBase>(aj) * mask + static_cast<doubleBase>(aj1) - roof * static_cast<doubleBase>(b1);
+            /*дальнейшее умножение приведет к переполнению,
+             * а left_part переполнится никогда не может =>
+             * нервенство не выполнено*/
+            if (right_part >> sizeof(base) * 8) {
+                break;
+            }
+            right_part = right_part * mask + static_cast<doubleBase>(b2);
+            roof--;
+            if (DEBUG_MODE) {
+                std::cout << "roof--" << std::endl;
+            }
+        } while (left_part > right_part);
+
+        if (DEBUG_MODE) {
+            std::cout << "roof = 0x" << std::hex << roof << std::endl;
+        }
+
+        //умножить и вычесть
+
+        new_num.ar = new_num.al;
+
+        for (int i = 0; i <= n; i++) {
+            new_num.al[n - i] = a.al[a.GetLength() - j - 1 - i];
+            new_num.ar++;
+        }
+
+        if (DEBUG_MODE) {
+            std::cout << "new_num = 0x" << new_num << std::endl;
+        }
+
+        glass = b.Mul(static_cast<base>(roof));
+        while (-1 == Compare(new_num, glass)) {
+            cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
+            cout << "roof " << hex << roof << endl;
+            roof--;
+            //	cout << "glas --- " << endl;
+            cout << "glass = " << glass << endl;
+            glass = b.Mul(static_cast<base>(roof));
+            cout << "glass1 = " << glass << endl;
+
+            cout << "new_num  = " << new_num << endl;
+            cout << "roof1  = " << hex << roof << endl;
+
+            cout << "b = " << b << endl;
+            cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
+            exit(0);
+        }
+
+        new_num = new_num - glass;
+        if (DEBUG_MODE) {
+            std::cout << "после вычитания new_num:"
+        }
+    }
 }
 
 ostream &operator<<(ostream &out, Big &a)
