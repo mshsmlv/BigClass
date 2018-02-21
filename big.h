@@ -3,8 +3,6 @@
 #include <cstring>
 using namespace std;
 
-const int TEST_BOX = 100000;
-
 typedef int BigError;
 typedef unsigned int base;
 typedef unsigned long long doubleBase;
@@ -25,7 +23,7 @@ private:
 public:
     Big();
     ~Big();
-    Big(Big &);
+    Big(const Big &);
 
     int Rand(int bound);
     int GetCapacity() const;

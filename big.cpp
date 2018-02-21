@@ -6,28 +6,23 @@ const int DEBUG_MODE = 0;
 
 Big ::Big()
 {
-    al = new base[3];
-    ah = al + 3 - 1;
+    al = new base[100];
+    ah = al + 99;
     ar = al;
 }
 
 Big ::~Big()
 {
     if (al) {
-        std::cout << "деструктор начало" << std::endl;
         delete[] al;
-        std::cout << "удалил в дкструкторе" << std::endl;
         al = NULL;
     }
-    std::cout << "деструктор конец" << std::endl;
 }
 
-Big ::Big(Big &old_n)
+Big ::Big(const Big &old_n)
 {
     int capacity = old_n.ah - old_n.al + 1;
-    std::cout << "c = " << capacity << std::endl;
     int length = old_n.ar - old_n.al + 1;
-    std::cout << "l = " << length << std::endl;
 
     al = new base[capacity];
     ah = al + capacity - 1;
@@ -37,7 +32,6 @@ Big ::Big(Big &old_n)
         ar++;
     }
     ar--;
-    std::cout << "работает конструктор копирования" << std::endl;
 }
 
 int Big ::Rand(int boundary)
@@ -72,12 +66,8 @@ void Big ::Resize(int new_capacity)
     if (GetCapacity() < new_capacity) {
         if (al) {
             delete[] al;
-            al = NULL;
-            std::cout << "удалил" << std::endl;
         }
-        std::cout << "new_capacity = " << new_capacity << std::endl;
         al = new base[new_capacity];
-        std::cout << "qwe" << std::endl;
         ah = al + new_capacity - 1;
         ar = al;
     }
@@ -86,7 +76,7 @@ void Big ::Resize(int new_capacity)
 // aborting insignificant zeros
 void Big ::Compress()
 {
-    for (int i = GetLength() - 1; 0 < i; i--) {
+    for (int i = GetLength() - 1; 0 <= i; i--) {
         if (al[i] != 0) {
             return;
         }
@@ -140,7 +130,6 @@ Big Big ::Div(base small, base &remainder)
         return result;
     }
 
-    std::cout << GetCapacity() << std::endl;
     result.Resize(GetCapacity());
 
     doubleBase t = 0;
@@ -344,7 +333,6 @@ Big operator-(Big &b, Big &a)
         }
     }
     result.ar--;
-    std::cout << "вычитание" << std::endl;
     result.Compress();
     return result;
 }
@@ -392,6 +380,7 @@ Big operator*(Big &b, Big &a)
 Big Division(Big &e, Big &c, Big &remainder)
 {
     Big a, b, result;
+    a.Resize(e.GetLength() + 1);
 
     a = e;
     b = c;
@@ -400,10 +389,6 @@ Big Division(Big &e, Big &c, Big &remainder)
     int n = b.GetLength();
     int m = a.GetLength() - n;
     int flag;  //для 4 шага
-
-    a.Resize(a.GetLength() + 1);
-
-    std::cout << "В НАЧАЛЕ ДЕЛЕНИЯ " << e.GetCapacity() << std::endl;
 
     if (DEBUG_MODE) {
         std::cout << "a = 0x" << a << std::endl;
@@ -469,8 +454,7 @@ Big Division(Big &e, Big &c, Big &remainder)
     Big glass, new_num, q;
 
     new_num.Resize(a.GetLength());
-    q.Resize(b.GetLength());
-
+    q.Resize(a.GetLength());
     q.ar = q.al + m + 1;
 
     for (int i = 0; i < q.GetLength(); i++) {
@@ -576,7 +560,6 @@ Big Division(Big &e, Big &c, Big &remainder)
 
         int stored_length_new_num = new_num.GetLength();
         new_num = new_num - glass;
-        std::cout << " отладка" << std::endl;
 
         if (stored_length_new_num > new_num.GetLength()) {
             for (int i = new_num.GetLength(); i < stored_length_new_num; i++) {
@@ -615,7 +598,6 @@ Big Division(Big &e, Big &c, Big &remainder)
 
     base r;
     a = a.Div(d, r);
-    std::cout << "денормализация закончена" << std::endl;
     q.Compress();
 
     if (DEBUG_MODE) {
@@ -623,7 +605,6 @@ Big Division(Big &e, Big &c, Big &remainder)
         std::cout << "остаток = 0x" << a << std::endl;
     }
 
-    std::cout << "отладка богов" << std::endl;
     remainder = a;
     return q;
 }
