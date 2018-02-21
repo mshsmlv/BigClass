@@ -8,29 +8,31 @@ int main()
 {
     Big num, num1, rem, result, result_be, q, w;
 
-    int M = 1024;
-    int T = 1000;
-    srand(time(NULL));
+    int M = 7;
+    int T = 10000;
+    //srand(time(NULL));
 
     do {
         std::cout << T << std::endl;
 
         int n = rand() % M + 1;
         int m = rand() % M + 1;
-
+	
         num.Rand(n);
         num1.Rand(m);
+
 
         if (CompareWithZero(num1))
             continue;
 
-        result = Division(num, num1, rem);
-        result_be = num1 * result;
-        result_be = result_be + rem;
-        T--;
-        q = num - rem;
-        w = num1 * result;
-    } while ((num == result_be) && (q == w) && (rem < num1) && T);
+        Division(num, num1, rem);
+	//	std::cout << "отладка" << std::endl;
+      //  result_be = num1 * result;
+        //result_be = result_be + rem;
+       // T--;
+        //q = num - rem;
+        //w = num1 * result;
+    } while(1);// while ((num == result_be) && (q == w) && (rem < num1) && T);
 
     if (T) {
         std::cout << "LENGTH num = " << num.GetLength() << std::endl;

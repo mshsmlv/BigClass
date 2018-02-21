@@ -6,39 +6,48 @@ const int DEBUG_MODE = 0;
 
 Big ::Big()
 {
-    al = new base[1030];
-    ah = al + 1030 - 1;
+    al = new base[3];
+    ah = al + 3 - 1;
     ar = al;
 }
 
 Big ::~Big()
 {
     if (al) {
+	std::cout <<"деструктор начало" << std::endl;
         delete[] al;
+		std::cout << "удалил в дкструкторе" << std::endl;
         al = NULL;
     }
+	std::cout << "деструктор конец" << std::endl;
 }
 
 Big ::Big(Big &old_n)
 {
-    //	cout << "работает конструктор копирования" << endl;
     int capacity = old_n.ah - old_n.al + 1;
+	std::cout << "c = " << capacity << std::endl; 
     int length = old_n.ar - old_n.al + 1;
+	std::cout << "l = " << length << std::endl; 
+
     al = new base[capacity];
     ah = al + capacity - 1;
-    ar = al + length - 1;
+    ar = al;
     for (int i = 0; i < length; i++) {
         al[i] = old_n.al[i];
+		ar++;
     }
+	ar--;
+	std::cout << "работает конструктор копирования" << std::endl;
 }
 
 int Big ::Rand(int boundary)
 {
     if (GetCapacity() < boundary) {
-        Resize(TEST_BOX);
+        Resize(boundary + 1);
     }
 
     ar = al;
+	ah = al + GetCapacity()- 1;
     for (int i = 0; i < boundary; i++) {
         al[i] = rand();
         ar++;
@@ -61,9 +70,14 @@ int Big ::GetLength() const
 void Big ::Resize(int new_capacity)
 {
     if (GetCapacity() < new_capacity) {
-        if (al)
+        if (al) {
             delete[] al;
+			al = NULL;
+			std::cout << "удалил" << std::endl;
+		}
+		std::cout << "new_capacity = " << new_capacity << std::endl;
         al = new base[new_capacity];
+	std::cout <<"qwe" << std::endl;
         ah = al + new_capacity - 1;
         ar = al;
     }
@@ -114,6 +128,7 @@ Big Big ::Mul(base small)
 
 Big Big ::Div(base small, base &remainder)
 {
+
     Big result;
     if (0 == small) {
         throw DIV_ZERO;
@@ -126,6 +141,7 @@ Big Big ::Div(base small, base &remainder)
         return result;
     }
 
+		std::cout << GetCapacity() << std::endl;
     result.Resize(GetCapacity());
 
     doubleBase t = 0;
@@ -183,7 +199,7 @@ int CompareWithZero(const Big &a)
 
 Big &Big ::operator=(const Big &a)
 {
-    if (GetCapacity() != a.GetCapacity()) {
+    if (GetCapacity() < a.GetCapacity()) {
         Resize(a.GetCapacity());
     }
 
@@ -329,6 +345,7 @@ Big operator-(Big &b, Big &a)
         }
     }
     result.ar--;
+	std::cout << "вычитание" << std::endl;
     result.Compress();
     return result;
 }
@@ -386,6 +403,8 @@ Big Division(Big &e, Big &c, Big &remainder)
     int flag;  //для 4 шага
 
     a.Resize(a.GetLength() + 1);
+
+	std::cout << "В НАЧАЛЕ ДЕЛЕНИЯ " << e.GetCapacity() << std::endl;
 
     if (DEBUG_MODE) {
         std::cout << "a = 0x" << a << std::endl;
@@ -449,6 +468,9 @@ Big Division(Big &e, Big &c, Big &remainder)
 
     doubleBase roof, left_part, right_part;
     Big glass, new_num, q;
+
+	new_num.Resize(a.GetLength());
+	q.Resize(b.GetLength());
 
     q.ar = q.al + m + 1;
 
@@ -527,6 +549,7 @@ Big Division(Big &e, Big &c, Big &remainder)
             new_num.al[n - i] = a.al[a.GetLength() - j - 1 - i];
             new_num.ar++;
         }
+		new_num.ar--;
 
         if (DEBUG_MODE) {
             std::cout << "new_num = 0x" << new_num << std::endl;
@@ -554,6 +577,7 @@ Big Division(Big &e, Big &c, Big &remainder)
 
         int stored_length_new_num = new_num.GetLength();
         new_num = new_num - glass;
+		std::cout << " отладка" << std::endl;
 
         if (stored_length_new_num > new_num.GetLength()) {
             for (int i = new_num.GetLength(); i < stored_length_new_num; i++) {
@@ -586,8 +610,13 @@ Big Division(Big &e, Big &c, Big &remainder)
         q.al[m - j] = static_cast<base>(roof);
     }
 
+	if(DEBUG_MODE) {
+		std::cout << "главный цикл закончен" << std::endl;
+	}
+
     base r;
     a = a.Div(d, r);
+	std::cout << "денормализация закончена" << std::endl;
     q.Compress();
 
     if (DEBUG_MODE) {
@@ -595,7 +624,7 @@ Big Division(Big &e, Big &c, Big &remainder)
         std::cout << "остаток = 0x" << a << std::endl;
     }
 
-    // std::cout << "отладка богов" << std::endl;
+    std::cout << "отладка богов" << std::endl;
     remainder = a;
     return q;
 }
