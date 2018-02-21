@@ -392,8 +392,6 @@ Big Division(Big &e, Big &c, Big &remainder)
         std::cout << "b = 0x" << b << std::endl;
     }
 
-    // TODO если b > a и если на ноль деление
-
     if (CompareWithZero(e)) {
         result.ar = result.al + 1;
         result.al[0] = 0;
