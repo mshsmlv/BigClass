@@ -148,16 +148,15 @@ Big Big ::Div(base small, base &remainder)
     return result;
 }
 
+/*1 - больше
+ * -1 меньше
+ * 0 - равно*/
+
 int Compare(const Big &b, const Big &a)
 {
     if (b.GetLength() > a.GetLength()) {
         return 1;
     } else if (b.GetLength() < a.GetLength()) {
-        //	cout << "b = " << b.GetLength() << endl;
-
-        //	cout << "a = " << a.GetLength() << endl;
-
-        //	cout << "ушел отсюда " << endl;
         return -1;
     }
 
@@ -206,8 +205,6 @@ Big operator+(Big &b, Big &a)
     int carry = 0;  // at the begin of addition
     int BLength = b.GetLength();
     int ALength = a.GetLength();
-    // cout << "BLENGTH = " << BLength << endl;
-    // cout << "ALENGTH = " << ALength << endl;
     int LessLength;
     int rcapacity;
 
@@ -233,13 +230,11 @@ Big operator+(Big &b, Big &a)
     for (i = 0; i < LessLength; i++) {
         glass = static_cast<doubleBase>(b.al[i]) + static_cast<doubleBase>(a.al[i]) + carry;
         result.al[i] = glass % mask;
-        // cout << "r.al[i] = " << hex << result.al[i] << endl;
         carry = !!(glass / mask);  // for the next digit
         result.ar++;
     }
     // add tail from array, which longer
     if (i < ALength) {
-        // cout << "ALENGTH" << endl;
         for (i = i; i < ALength; i++) {
             glass = a.al[i] + carry;
             result.al[i] = glass % mask;
@@ -249,15 +244,11 @@ Big operator+(Big &b, Big &a)
     }
 
     else if (i < BLength) {
-        // cout << "BLENGTH" << endl;
         for (i = i; i < BLength; i++) {
             glass = b.al[i] + carry;
-            //	cout << "glass = " << hex << glass << endl;
             result.al[i] = glass % mask;
-            //	cout << "sdgsdfgdsg = " << hex << result.al[i] << endl;
             result.ar++;
             carry = !!(glass / mask);
-            // cout << "result " << result << endl;
         }
     }
 
@@ -361,7 +352,6 @@ Big operator*(Big &b, Big &a)
         result.ar++;
     }
     result.ar--;
-    // cout << "result length from function = " << result.GetLength() << endl;
 
     int i, j;
     for (j = 0; j < a.GetLength(); j++) {
@@ -642,7 +632,6 @@ ostream &operator<<(ostream &out, Big &a)
     if (flag) {
         out << "0";
     }
-    //	out << endl;
     return out;
 }
 
