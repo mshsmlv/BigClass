@@ -6,7 +6,7 @@ using namespace BigErrors;
 
 int main()
 {
-    Big num, num1, rem, result, result_be;
+    Big num, num1, rem, result, result_be, q, w;
 
     int M = 1024;
     int T = 1000;
@@ -28,8 +28,9 @@ int main()
         result_be = num1 * result;
         result_be = result_be + rem;
         T--;
-    } while ((Compare(num, result_be) == 0) && (Compare(num - rem, num1 * result) == 0) && (Compare(rem, num1) == -1) &&
-             T);
+        q = num - rem;
+        w = num1 * result;
+    } while ((num == result_be) && (q == w) && (rem < num1) && T);
 
     if (T) {
         std::cout << "LENGTH num = " << num.GetLength() << std::endl;

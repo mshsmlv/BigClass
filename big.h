@@ -40,11 +40,18 @@ public:
     friend Big Division(Big &, Big &, Big &);
 
     Big &operator=(const Big &a);  // this = a
-    friend Big operator+(Big &b, Big &a);
-    friend Big operator-(Big &b, Big &a);  // b-a
-    friend Big operator*(Big &b, Big &a);
-    friend Big operator/(Big &b, Big &a);
-    friend Big operator%(Big &b, Big &a);
+    friend Big operator+(Big &a, Big &b);
+    friend Big operator-(Big &a, Big &b);  // b-a
+    friend Big operator*(Big &a, Big &b);
+    friend Big operator/(Big &a, Big &b);
+    friend Big operator%(Big &a, Big &b);
+
+    friend bool operator>(Big &a, Big &b);
+    friend bool operator<(Big &a, Big &b);
+    friend bool operator>=(Big &a, Big &b);
+    friend bool operator<=(Big &a, Big &b);
+    friend bool operator==(Big &a, Big &b);
+
     friend istream &operator>>(istream &in, Big &a);
     friend ostream &operator<<(ostream &out, Big &a);
 };

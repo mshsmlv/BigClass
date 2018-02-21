@@ -600,6 +600,48 @@ Big Division(Big &e, Big &c, Big &remainder)
     return q;
 }
 
+bool operator>(Big &a, Big &b)
+{
+    if (Compare(a, b) == 1) {
+        return true;
+    }
+    return false;
+}
+
+bool operator<(Big &a, Big &b)
+{
+    if (Compare(a, b) == -1) {
+        return true;
+    }
+    return false;
+}
+
+bool operator>=(Big &a, Big &b)
+{
+    int result = Compare(a, b);
+    if ((result == 1) || (result == 0)) {
+        return true;
+    }
+    return false;
+}
+
+bool operator<=(Big &a, Big &b)
+{
+    int result = Compare(a, b);
+    if ((result == -1) || (result) == 0) {
+        return true;
+    }
+    return false;
+}
+
+bool operator==(Big &a, Big &b)
+{
+    if (Compare(a, b) == 0) {
+        return true;
+    }
+    return false;
+}
+
 ostream &operator<<(ostream &out, Big &a)
 {
     int block = sizeof(base) * 2;  // *8/4 how many numbers in the "base"
