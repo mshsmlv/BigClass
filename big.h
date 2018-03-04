@@ -36,8 +36,10 @@ public:
     friend int CompareWithZero(const Big &b);
     friend Big Substraction(Big &b, Big &a, int &flag);
     friend Big Division(Big &, Big &, Big &);
+    friend Big Degree(Big &x, Big &y, Big &mod);
 
     Big &operator=(const Big &a);  // this = a
+    Big &operator=(int a);
     friend Big operator+(Big &a, Big &b);
     friend Big operator-(Big &a, Big &b);  // b-a
     friend Big operator*(Big &a, Big &b);

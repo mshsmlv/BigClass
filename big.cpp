@@ -201,6 +201,16 @@ Big &Big ::operator=(const Big &a)
     ar--;
 }
 
+Big &Big ::operator=(int a)
+{
+    if (GetCapacity() < 1) {
+        Resize(1);
+    }
+
+    ar = al;
+    al[0] = a;
+}
+
 Big operator+(Big &b, Big &a)
 {
     Big result;
@@ -285,7 +295,7 @@ Big operator-(Big &b, Big &a)
 
     int carry = 0;
     int given = 0;
-    doubleBase mask = static_cast<doubleBase>(1) << (sizeof(base) * 8);  //ЗДЕСЬ МАГИЯ!!!
+    doubleBase mask = static_cast<doubleBase>(1) << (sizeof(base) * 8);
     doubleBase cup = 0;
     doubleBase glass;
 
@@ -293,7 +303,8 @@ Big operator-(Big &b, Big &a)
 
     for (i = 0; i < a.GetLength(); i++) {
         result.ar++;
-        cup = a.al[i] + carry;
+        cup = static_cast<doubleBase>(a.al[i]) + static_cast<doubleBase>(carry);
+        carry = 0;
 
         if (static_cast<doubleBase>(b.al[i]) < cup) {
             given = 1;
@@ -308,28 +319,26 @@ Big operator-(Big &b, Big &a)
 
         else {
             result.al[i] = b.al[i] - static_cast<base>(cup);
-            carry = 0;
-            given = 0;
         }
     }
 
     for (i; i < b.GetLength(); i++) {
         result.ar++;
-        if (static_cast<doubleBase>(b.al[i]) < carry) {
+        cup = carry;
+        carry = 0;
+        if (static_cast<doubleBase>(b.al[i]) < cup) {
             given = 1;
         }
 
         if (given) {
-            glass = static_cast<doubleBase>(b.al[i]) + static_cast<doubleBase>(mask) - static_cast<doubleBase>(carry);
+            glass = static_cast<doubleBase>(b.al[i]) + mask - static_cast<doubleBase>(cup);
             result.al[i] = glass;
             carry = 1;
             given = 0;
         }
 
         else {
-            result.al[i] = static_cast<doubleBase>(b.al[i]) - carry;
-            carry = 0;
-            given = 0;
+            result.al[i] = static_cast<doubleBase>(b.al[i]) - static_cast<doubleBase>(cup);
         }
     }
     result.ar--;
@@ -597,7 +606,7 @@ Big Division(Big &e, Big &c, Big &remainder)
     }
 
     base r;
-    a = a.Div(d, r);
+    remainder = a.Div(d, r);
     q.Compress();
 
     if (DEBUG_MODE) {
@@ -605,8 +614,56 @@ Big Division(Big &e, Big &c, Big &remainder)
         std::cout << "остаток = 0x" << a << std::endl;
     }
 
-    remainder = a;
     return q;
+}
+
+Big operator/(Big &a, Big &b)
+{
+    Big remainder;
+    return Division(a, b, remainder);
+}
+
+Big operator%(Big &a, Big &b)
+{
+    Big remainder;
+
+    Division(a, b, remainder);
+    return remainder;
+}
+
+Big Degree(Big &x, Big &y, Big &mod)
+{
+    Big q = x;
+    Big z;
+
+    if(y.al[0] & 1) {
+        z = x;
+        std::cout << "присвоил x" << std::endl;
+    }
+    else {
+        std::cout << "присвоил 1" << std::endl;
+        z = 1;
+    };
+
+    int j = 1;
+    int i = 0;
+    for (i = 0; i < y.GetLength(); i++) {
+        std::cout << "сменил цифру" << std::endl;
+        for (j; j < sizeof(base); j++) {
+            std::cout << "q = " << q << std::endl;
+            q = q * q;
+            std::cout << "q1 = " << q << std::endl;
+            q = q % mod;
+            std::cout << "q2 = " << q << std::endl;
+            if ((y.al[i] >> j) & 1) {
+                std::cout << z << std::endl;
+                z = z * q;
+                z = z % mod;
+            }
+        }
+        j = 0;
+    }
+    return z;
 }
 
 bool operator>(Big &a, Big &b)
