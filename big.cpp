@@ -636,17 +636,16 @@ Big Degree(Big &x, Big &y, Big &mod)
     Big q = x;
     Big z;
 
-    if(y.al[0] & 1) {
+    if (y.al[0] & 1) {
         z = x;
-    }
-    else {
+    } else {
         z = 1;
     };
 
     int j = 1;
     int i = 0;
     for (i = 0; i < y.GetLength(); i++) {
-        for (j; j < sizeof(base)*8; j++) {
+        for (j; j < sizeof(base) * 8; j++) {
             q = q * q;
             q = q % mod;
             if ((y.al[i] >> j) & 1) {
