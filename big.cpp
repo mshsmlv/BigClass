@@ -638,25 +638,18 @@ Big Degree(Big &x, Big &y, Big &mod)
 
     if(y.al[0] & 1) {
         z = x;
-        std::cout << "присвоил x" << std::endl;
     }
     else {
-        std::cout << "присвоил 1" << std::endl;
         z = 1;
     };
 
     int j = 1;
     int i = 0;
     for (i = 0; i < y.GetLength(); i++) {
-        std::cout << "сменил цифру" << std::endl;
-        for (j; j < sizeof(base); j++) {
-            std::cout << "q = " << q << std::endl;
+        for (j; j < sizeof(base)*8; j++) {
             q = q * q;
-            std::cout << "q1 = " << q << std::endl;
             q = q % mod;
-            std::cout << "q2 = " << q << std::endl;
             if ((y.al[i] >> j) & 1) {
-                std::cout << z << std::endl;
                 z = z * q;
                 z = z % mod;
             }

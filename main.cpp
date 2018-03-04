@@ -6,11 +6,11 @@ using namespace BigErrors;
 
 int main()
 {
-   Big num, num1, rem, result, result_be, q, w;
+   /*Big num, num1, rem, result, result_be, q, w;
 
     int M = 1024;
     int T = 10000;
-   // srand(time(NULL));
+    srand(time(NULL));
 
     do {
         std::cout << T << std::endl;
@@ -43,17 +43,14 @@ int main()
         std::cout << "q = " << q <<std::endl;
         std::cout << "w = " << w << std::endl;
     };
-
-  /*  Big x,y,mod, result;
+*/
+    Big x,y,mod, result;
 
     std::cin >> x;
     std::cin >> y;
-    //std::cin >> mod;
-    Big rem;
-    result = Division(x, y, rem);
-    //result = Degree(x,y,mod);
+    std::cin >> mod;
+    result = Degree(x,y,mod);
     std::cout << "result " << result << std::endl;
-    std::cout << "remainder " << rem << std::endl;
-*/
+
     return 0;
 }
