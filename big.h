@@ -37,9 +37,12 @@ public:
     friend Big Substraction(Big &b, Big &a, int &flag);
     friend Big Division(Big &, Big &, Big &);
     friend Big Degree(Big &x, Big &y, Big &mod);
+    friend Big GetZForBurretReduction(Big &mod);
+    friend Big BurretReduction(Big &x, Big &mod, Big &z);
 
     Big &operator=(const Big &a);  // this = a
-    Big &operator=(int a);
+    Big &operator=(base a);
+    Big &operator=(doubleBase a);
     friend Big operator+(Big &a, Big &b);
     friend Big operator-(Big &a, Big &b);  // b-a
     friend Big operator*(Big &a, Big &b);
@@ -51,6 +54,7 @@ public:
     friend bool operator>=(Big &a, Big &b);
     friend bool operator<=(Big &a, Big &b);
     friend bool operator==(Big &a, Big &b);
+    friend bool operator!=(Big &a, Big &b);
 
     friend istream &operator>>(istream &in, Big &a);
     friend ostream &operator<<(ostream &out, Big &a);

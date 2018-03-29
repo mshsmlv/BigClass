@@ -6,7 +6,8 @@ using namespace BigErrors;
 
 int main()
 {
-    /*Big num, num1, rem, result, result_be, q, w;
+    /*
+    Big num, num1, rem, result, result_be, q, w;
 
      int M = 1024;
      int T = 10000;
@@ -43,14 +44,43 @@ int main()
          std::cout << "q = " << q <<std::endl;
          std::cout << "w = " << w << std::endl;
      };
- */
-    Big x, y, mod, result;
+*/
+    Big x, z, mod, result, result1;
+    int M = 1024;
+    int T = 1000;
 
-    std::cin >> x;
-    std::cin >> y;
-    std::cin >> mod;
-    result = Degree(x, y, mod);
-    std::cout << "result " << result << std::endl;
+    while (T) {
+        std::cout << T << std::endl;
+        int k = rand() % M;
+
+        mod.Rand(k);
+        k = mod.GetLength();
+
+        if (CompareWithZero(mod)) {
+            continue;
+        }
+
+        int n = 1 + rand() % (2 * k);
+        if (k == 0 || n == 0) {
+            continue;
+        }
+        x.Rand(n);
+
+        z = GetZForBurretReduction(mod);
+        result = BurretReduction(x, mod, z);
+
+        result1 = x % mod;
+        if (result != result1) {
+            std::cout << "k = " << k << std::endl;
+            std::cout << "n = " << n << std::endl;
+            std::cout << "x = " << x << std::endl;
+            std::cout << "mod  = " << mod << std::endl;
+            std::cout << "result  = " << result << std::endl;
+            std::cout << "result1 = " << result1 << std::endl;
+            return 0;
+        }
+        T--;
+    }
 
     return 0;
 }

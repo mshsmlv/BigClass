@@ -201,7 +201,7 @@ Big &Big ::operator=(const Big &a)
     ar--;
 }
 
-Big &Big ::operator=(int a)
+Big &Big ::operator=(base a)
 {
     if (GetCapacity() < 1) {
         Resize(1);
@@ -209,6 +209,18 @@ Big &Big ::operator=(int a)
 
     ar = al;
     al[0] = a;
+}
+
+Big &Big::operator=(doubleBase a)
+{
+    if (GetCapacity() < 1) {
+        Resize(2);
+    }
+
+    ar = al + 1;
+    al[0] = a % (static_cast<doubleBase>(1) << (sizeof(base) * 8));
+    al[1] = a / (static_cast<doubleBase>(1) << (sizeof(base) * 8));
+    Compress();
 }
 
 Big operator+(Big &b, Big &a)
@@ -405,9 +417,9 @@ Big Division(Big &e, Big &c, Big &remainder)
     }
 
     if (CompareWithZero(e)) {
-        result.ar = result.al + 1;
+        result.ar = result.al;
         result.al[0] = 0;
-        remainder.ar = remainder.al + 1;
+        remainder.ar = remainder.al;
         remainder.al[0] = 0;
         return result;
     }
@@ -639,7 +651,7 @@ Big Degree(Big &x, Big &y, Big &mod)
     if (y.al[0] & 1) {
         z = x;
     } else {
-        z = 1;
+        z = static_cast<base>(1);
     };
 
     int j = 1;
@@ -695,6 +707,14 @@ bool operator<=(Big &a, Big &b)
 bool operator==(Big &a, Big &b)
 {
     if (Compare(a, b) == 0) {
+        return true;
+    }
+    return false;
+}
+
+bool operator!=(Big &a, Big &b)
+{
+    if (Compare(a, b) != 0) {
         return true;
     }
     return false;
