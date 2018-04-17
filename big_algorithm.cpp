@@ -14,7 +14,6 @@ Big GetZForBurretReduction(Big &mod)
         z.al[i] = 0;
     }
 
-    k = k;
     for (int i = 0; i < k; i++) {
         z.al[i] = 0;
     }
@@ -25,36 +24,17 @@ Big GetZForBurretReduction(Big &mod)
 
 Big BurretReduction(Big &x, Big &mod, Big &z)
 {
-    Big bk_1, bk1, q, r1, r2, r_dash, glass;
+    Big q, r1, r2, r_dash, glass;
 
     if (x < mod) {
         return x;
     }
 
-    if (CompareWithZero(x)) {
-        r_dash.ar = r_dash.al;
-        r_dash.al[0] = 0;
-        return r_dash;
-    }
-
     int k = mod.GetLength();
 
-    bk_1.Resize(k);
-    bk1.Resize(k + 2);
-    r1.Resize(k + 2);
-    r2.Resize(k + 2);
+    r1.Resize(k + 1);
+    r2.Resize(k + 1);
     q.Resize(x.GetLength() * 2 * k + 1);
-
-    bk_1.al[k - 1] = 1;
-    bk_1.ar = bk_1.al + k - 1;
-    for (int i = 0; i < k - 1; i++) {
-        bk_1.al[i] = 0;
-    }
-    bk1.al[k + 1] = 1;
-    bk1.ar = bk1.al + k + 1;
-    for (int i = 0; i < k + 1; i++) {
-        bk1.al[i] = 0;
-    }
 
     // q = x/bk_1
     int i, j;
@@ -92,7 +72,11 @@ Big BurretReduction(Big &x, Big &mod, Big &z)
     if (r1 >= r2) {
         r_dash = r1 - r2;
     } else {
-        r_dash = bk1 + r1;
+        r_dash.al[k+1] = 1;
+        for(int i = r_dash.GetLength(); i < k + 1; i++) {
+          r_dash.al[i] = 0;
+        }
+        r_dash.ar = r_dash.al + k + 1;
         r_dash = r_dash - r2;
     }
 

@@ -46,10 +46,11 @@ int main()
      };
 */
     Big x, z, mod, result, result1;
-    int M = 1024;
-    int T = 1000;
+    int M = 2000;
+    int M1 = 4000;
+    int T = 500;
 
-    while (T) {
+/*    while (T) {
         std::cout << T << std::endl;
         int k = rand() % M;
 
@@ -61,9 +62,6 @@ int main()
         }
 
         int n = 1 + rand() % (2 * k);
-        if (k == 0 || n == 0) {
-            continue;
-        }
         x.Rand(n);
 
         z = GetZForBurretReduction(mod);
@@ -80,7 +78,26 @@ int main()
             return 0;
         }
         T--;
+    }*/
+
+    mod.Rand(M);
+    int t = time(NULL);
+    for(int i; i < T; i++) {
+      x.Rand(M1);
+      result1 = x % mod;
     }
+    t = time(NULL) - t;
+
+    std::cout << "Время обычного деления: " << t << std::endl;
+
+    z = GetZForBurretReduction(mod);
+    t = time(NULL);
+    for(int i; i < T; i++) {
+      x.Rand(M1);
+      result1 = BurretReduction(x,mod,z);
+    }
+    t = time(NULL) - t;
+    std::cout << "Barrett: " << t << std::endl;
 
     return 0;
 }
