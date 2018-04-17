@@ -46,58 +46,25 @@ int main()
      };
 */
     Big x, z, mod, result, result1;
-    int M = 2000;
+    int M = 35;
     int M1 = 4000;
     int T = 500;
 
-/*    while (T) {
-        std::cout << T << std::endl;
-        int k = rand() % M;
+    while(T) {
+      x.Rand(M);
+      z.Rand(M);
 
-        mod.Rand(k);
-        k = mod.GetLength();
-
-        if (CompareWithZero(mod)) {
-            continue;
-        }
-
-        int n = 1 + rand() % (2 * k);
-        x.Rand(n);
-
-        z = GetZForBurretReduction(mod);
-        result = BurretReduction(x, mod, z);
-
-        result1 = x % mod;
-        if (result != result1) {
-            std::cout << "k = " << k << std::endl;
-            std::cout << "n = " << n << std::endl;
-            std::cout << "x = " << x << std::endl;
-            std::cout << "mod  = " << mod << std::endl;
-            std::cout << "result  = " << result << std::endl;
-            std::cout << "result1 = " << result1 << std::endl;
-            return 0;
-        }
-        T--;
-    }*/
-
-    mod.Rand(M);
-    int t = time(NULL);
-    for(int i; i < T; i++) {
-      x.Rand(M1);
-      result1 = x % mod;
+      result = Karatsuba(x, z);
+      result1 = x*z;
+      if(result != result1) {
+        std::cout << "x = " << x << std::endl;
+        std::cout << "z = " << z << std::endl;
+        std::cout << "result  = " << result << std::endl;
+        std::cout << "result1 = " << result1 << std::endl;
+        std::cout << "result_length  = " << result.GetLength() << std::endl;
+        std::cout << "result1_length = " << result1.GetLength() << std::endl;
+        return 0;
+      }
+      T--;
     }
-    t = time(NULL) - t;
-
-    std::cout << "Время обычного деления: " << t << std::endl;
-
-    z = GetZForBurretReduction(mod);
-    t = time(NULL);
-    for(int i; i < T; i++) {
-      x.Rand(M1);
-      result1 = BurretReduction(x,mod,z);
-    }
-    t = time(NULL) - t;
-    std::cout << "Barrett: " << t << std::endl;
-
-    return 0;
 }

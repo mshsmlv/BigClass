@@ -9,6 +9,11 @@ Big ::Big()
     al = new base[100];
     ah = al + 99;
     ar = al;
+    int i = 0;
+    while(al+i - 1 != ah) {
+      al[i] = 0;
+      i++;
+    }
 }
 
 Big ::~Big()
@@ -70,6 +75,11 @@ void Big ::Resize(int new_capacity)
         al = new base[new_capacity];
         ah = al + new_capacity - 1;
         ar = al;
+    }
+    int i = 0;
+    while(al+i - 1 != ah) {
+      al[i] = 0;
+      i++;
     }
 }
 

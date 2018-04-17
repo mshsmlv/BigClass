@@ -39,6 +39,7 @@ public:
     friend Big Degree(Big &x, Big &y, Big &mod);
     friend Big GetZForBurretReduction(Big &mod);
     friend Big BurretReduction(Big &x, Big &mod, Big &z);
+    friend Big Karatsuba(Big &u, Big &v);
 
     Big &operator=(const Big &a);  // this = a
     Big &operator=(base a);
