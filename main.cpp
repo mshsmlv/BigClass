@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "big.h"
+const int test_range = 100;
 
 using namespace BigErrors;
 
@@ -46,25 +47,45 @@ int main()
      };
 */
     Big x, z, mod, result, result1;
-    int M = 35;
-    int M1 = 4000;
-    int T = 500;
+    int M = 10000;
+    int T, T1;
+    T = T1 = test_range;
+    int t;
+    /*
+        while(T) {
+          x.Rand(rand()%M);
+          z.Rand(rand()%M);
 
-    while(T) {
-      x.Rand(M);
-      z.Rand(M);
+          result = Karatsuba(x, z);
+          result1 = x*z;
+          if(result != result1) {
+            std::cout << "T = " <<T << std::endl;
+            std::cout << "x = " << x << std::endl;
+            std::cout << "z = " << z << std::endl;
+            std::cout << "result  = " << result << std::endl;
+            std::cout << "result1 = " << result1 << std::endl;
+            std::cout << "result_length  = " << result.GetLength() << std::endl;
+            std::cout << "result1_length = " << result1.GetLength() << std::endl;
+            return 0;
+          }
+          T--;
+        }*/
 
-      result = Karatsuba(x, z);
-      result1 = x*z;
-      if(result != result1) {
-        std::cout << "x = " << x << std::endl;
-        std::cout << "z = " << z << std::endl;
-        std::cout << "result  = " << result << std::endl;
-        std::cout << "result1 = " << result1 << std::endl;
-        std::cout << "result_length  = " << result.GetLength() << std::endl;
-        std::cout << "result1_length = " << result1.GetLength() << std::endl;
-        return 0;
-      }
-      T--;
+    x.Rand(M);
+    z.Rand(M);
+    t = time(NULL);
+    while (T) {
+        Karatsuba(x, z);
+        T--;
     }
+    t = time(NULL) - t;
+    std::cout << "Karatsuba time: " << t << std::endl;
+
+    t = time(NULL);
+    while (T1) {
+        x *z;
+        T1--;
+    }
+    t = time(NULL) - t;
+    std::cout << "Mul time: " << t << std::endl;
 }

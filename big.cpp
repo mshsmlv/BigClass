@@ -10,9 +10,9 @@ Big ::Big()
     ah = al + 99;
     ar = al;
     int i = 0;
-    while(al+i - 1 != ah) {
-      al[i] = 0;
-      i++;
+    while (al + i - 1 != ah) {
+        al[i] = 0;
+        i++;
     }
 }
 
@@ -77,9 +77,9 @@ void Big ::Resize(int new_capacity)
         ar = al;
     }
     int i = 0;
-    while(al+i - 1 != ah) {
-      al[i] = 0;
-      i++;
+    while (al + i - 1 != ah) {
+        al[i] = 0;
+        i++;
     }
 }
 
@@ -371,6 +371,12 @@ Big operator-(Big &b, Big &a)
 Big operator*(Big &b, Big &a)
 {
     Big result;
+    if (CompareWithZero(b) || CompareWithZero(a)) {
+        result.al[0] = 0;
+        result.ar = result.al;
+        return result;
+    }
+
     if (a.GetLength() <= 1) {
         result = b.Mul(a.al[0]);
         return result;
