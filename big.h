@@ -40,6 +40,7 @@ public:
     friend Big GetZForBurretReduction(Big &mod);
     friend Big BurretReduction(Big &x, Big &mod, Big &z);
     friend Big Karatsuba(Big &u, Big &v);
+    friend bool MillerRubin(Big &n, int t);
 
     Big &operator=(const Big &a);  // this = a
     Big &operator=(base a);

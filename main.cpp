@@ -71,7 +71,7 @@ int main()
           T--;
         }*/
 
-    x.Rand(M);
+/*    x.Rand(M);
     z.Rand(M);
     t = time(NULL);
     while (T) {
@@ -87,5 +87,9 @@ int main()
         T1--;
     }
     t = time(NULL) - t;
-    std::cout << "Mul time: " << t << std::endl;
+    std::cout << "Mul time: " << t << std::endl;*/
+
+    Big n;
+    n.Rand(10);
+    MillerRubin(n, 20);
 }

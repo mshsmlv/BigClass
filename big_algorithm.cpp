@@ -1,4 +1,5 @@
 #include "big.h"
+#include <stdlib.h>
 const int range = 50;
 
 Big GetZForBurretReduction(Big &mod)
@@ -186,4 +187,50 @@ Big Karatsuba(Big &u, Big &v)
 
     result.Compress();
     return result;
+}
+
+bool MillerRubin(Big &n, int t) {
+
+    int s = 0; 
+    base remainder;
+    Big r, n_1, one, glass, b, y;
+    one.al[0] = 1;
+    one.ar = one.al;
+
+    n_1 = n - one;
+    r = n_1;
+
+    remainder = 0;
+
+    for(;; s++) {
+        glass = r.Div(2, remainder);
+        if(remainder) break;
+        r = glass;
+    }
+
+    std::cout << "s = " << s << std::endl;
+    std::cout << "n = " << n << std::endl;
+    std::cout << "r = " << n_1 << std::endl;
+
+
+    while(t) {
+
+        b.al[0] = rand()&1;
+        b.ar = b.al;
+
+        y = Degree(b, r, n);
+
+        std::cout << "y = " << y << std::endl;
+
+        if((y.al[0] != 1)) {
+            int j = 1;
+            while(j < s) {
+//TODO shifts , constants, 
+
+                j++;
+            }
+        }
+
+        t--;
+    }
 }
