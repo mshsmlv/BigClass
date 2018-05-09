@@ -191,18 +191,21 @@ Big Karatsuba(Big &u, Big &v)
 
 bool MillerRubin(Big &n, int t) {
 
-    int s = 0; 
+    int s; 
     base remainder;
-    Big r, n_1, one, glass, b, y;
+    Big r, n_1, one, glass, b, y, two;
     one.al[0] = 1;
     one.ar = one.al;
+
+    two.al[0] = 2;
+    two.ar = two.al;
 
     n_1 = n - one;
     r = n_1;
 
     remainder = 0;
 
-    for(;; s++) {
+    for(s = 0;; s++) {
         glass = r.Div(2, remainder);
         if(remainder) break;
         r = glass;
@@ -210,27 +213,38 @@ bool MillerRubin(Big &n, int t) {
 
     std::cout << "s = " << s << std::endl;
     std::cout << "n = " << n << std::endl;
-    std::cout << "r = " << n_1 << std::endl;
-
+    std::cout << "r = " << r << std::endl;
 
     while(t) {
 
-        b.al[0] = rand()&1;
+        b.al[0] = rand()|1;
         b.ar = b.al;
+        std::cout << "b = " << b << std::endl;
 
         y = Degree(b, r, n);
 
         std::cout << "y = " << y << std::endl;
 
-        if((y.al[0] != 1)) {
+        if((y.al[0] != 1) && y != n_1) {
             int j = 1;
             while(j < s) {
-//TODO shifts , constants, 
-
+                if(y == n_1) {
+                    break;
+                }
+                y = Degree(y, two, n);
+                std::cout << "y* = " << y << std::endl;
+                if((y.al[0] == 1) && (y.ar == y.al)) {
+                    std::cout<<"поэтому условию вышел " << std::endl;
+                    return false;
+                }
                 j++;
             }
+            if(y != n_1) {
+                std::cout << "или по этому " << std::endl; 
+                return false;
+            }
         }
-
         t--;
     }
+    return true;
 }

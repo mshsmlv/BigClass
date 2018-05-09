@@ -88,8 +88,11 @@ int main()
     }
     t = time(NULL) - t;
     std::cout << "Mul time: " << t << std::endl;*/
-
+   
+    
     Big n;
-    n.Rand(10);
-    MillerRubin(n, 20);
+    std::cin >> n;
+    if(MillerRubin(n, 20)) {
+        std::cout<<n<<std::endl;
+    };
 }
