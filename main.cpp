@@ -92,7 +92,8 @@ int main()
     
     Big n;
     std::cin >> n;
-    if(MillerRubin(n, 20)) {
+    if(MillerRubin(n, 1)) {
         std::cout<<n<<std::endl;
-    };
+        std::cout << "DONE" << std::endl;
+    }
 }
