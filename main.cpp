@@ -71,29 +71,28 @@ int main()
           T--;
         }*/
 
-/*    x.Rand(M);
-    z.Rand(M);
-    t = time(NULL);
-    while (T) {
-        Karatsuba(x, z);
-        T--;
-    }
-    t = time(NULL) - t;
-    std::cout << "Karatsuba time: " << t << std::endl;
+    /*    x.Rand(M);
+        z.Rand(M);
+        t = time(NULL);
+        while (T) {
+            Karatsuba(x, z);
+            T--;
+        }
+        t = time(NULL) - t;
+        std::cout << "Karatsuba time: " << t << std::endl;
 
-    t = time(NULL);
-    while (T1) {
-        x *z;
-        T1--;
-    }
-    t = time(NULL) - t;
-    std::cout << "Mul time: " << t << std::endl;*/
-   
-    
+        t = time(NULL);
+        while (T1) {
+            x *z;
+            T1--;
+        }
+        t = time(NULL) - t;
+        std::cout << "Mul time: " << t << std::endl;*/
+
     Big n;
     std::cin >> n;
-    if(MillerRubin(n, 1)) {
-        std::cout<<n<<std::endl;
-        std::cout << "DONE" << std::endl;
+
+    if (MillerRabin(n, 10)) {
+        std::cout << "OK" << std::endl;
     }
 }

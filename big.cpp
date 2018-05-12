@@ -195,6 +195,14 @@ int CompareWithZero(const Big &a)
     return true;
 }
 
+int CompareWithConst(const Big &b, base a)
+{
+    if ((b.al[0] == a) && b.ar == b.al) {
+        return true;
+    }
+    return false;
+}
+
 Big &Big ::operator=(const Big &a)
 {
     if (GetCapacity() < a.GetCapacity()) {
@@ -661,6 +669,7 @@ Big operator%(Big &a, Big &b)
 
 Big Degree(Big &x, Big &y, Big &mod)
 {
+    Big zBurret = GetZForBurretReduction(mod);
     Big q = x;
     Big z;
 
@@ -675,10 +684,10 @@ Big Degree(Big &x, Big &y, Big &mod)
     for (i = 0; i < y.GetLength(); i++) {
         for (j; j < sizeof(base) * 8; j++) {
             q = q * q;
-            q = q % mod;
+            q = BurretReduction(q, mod, zBurret);
             if ((y.al[i] >> j) & 1) {
                 z = z * q;
-                z = z % mod;
+                z = BurretReduction(z, mod, zBurret);
             }
         }
         j = 0;

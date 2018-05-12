@@ -15,12 +15,11 @@ static const BigError DIV_ZERO = 3;
 };  // namespace BigErrors
 
 class Big {
-private:
+public:
     base *al;  //в начале всегда
     base *ar;
     base *ah;  // range of allocation memory
 
-public:
     Big();
     ~Big();
     Big(const Big &);
@@ -34,13 +33,14 @@ public:
     Big Div(base, base &);
     friend int Compare(const Big &b, const Big &a);
     friend int CompareWithZero(const Big &b);
+    friend int CompareWithConst(const Big &b, base a);
     friend Big Substraction(Big &b, Big &a, int &flag);
     friend Big Division(Big &, Big &, Big &);
     friend Big Degree(Big &x, Big &y, Big &mod);
     friend Big GetZForBurretReduction(Big &mod);
     friend Big BurretReduction(Big &x, Big &mod, Big &z);
     friend Big Karatsuba(Big &u, Big &v);
-    friend bool MillerRubin(Big &n, int t);
+    friend bool MillerRabin(Big &n, int t);
 
     Big &operator=(const Big &a);  // this = a
     Big &operator=(base a);

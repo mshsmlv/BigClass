@@ -1,5 +1,5 @@
-#include "big.h"
 #include <stdlib.h>
+#include "big.h"
 const int range = 50;
 
 Big GetZForBurretReduction(Big &mod)
@@ -189,47 +189,61 @@ Big Karatsuba(Big &u, Big &v)
     return result;
 }
 
-bool MillerRubin(Big &n, int t) {
-
-    n.al[0] |= 1;
-    int s; 
+bool MillerRabin(Big &n, int t)
+{
+    int i, j, s;
     base remainder;
-    Big r, n_1, one, glass, b, y, two;
+    Big r, n_1, n_3, one, two, three, b, y, y2;
+    Big zBurret = GetZForBurretReduction(n);
     one.al[0] = 1;
     one.ar = one.al;
 
     two.al[0] = 2;
     two.ar = two.al;
 
-    n_1 = n - one;
-    r = n_1;
+    three.al[0] = 3;
+    three.ar = three.al;
 
-    for(s = 0;; s++) {
-        glass = r.Div(2, remainder);
-        if(remainder) break;
-        r = glass;
+    n_1 = n - one;
+
+    j = 0;
+    s = 0;
+    i = 0;
+    while (1) {
+        if (j == (sizeof(base) * 8)) {
+            j = 0;
+            i++;
+        }
+        if ((n_1.al[i] >> j) & 1) {
+            break;
+        }
+        j++;
+        s++;
+        ;
     }
 
-    while(t) {
-
-        b.al[0] = rand()|1;
-        b.ar = b.al;
+    while (t) {
+        b.Rand(n.GetLength());
+        n_3 = n - three;
+        b = b % n_3;
+        b = b + two;
 
         y = Degree(b, r, n);
 
-        if((y.al[0] != 1) && y != n_1) {
+        if (!CompareWithConst(y, 1) && (y != n_1)) {
             int j = 1;
-            while(j < s) {
-                if(y == n_1) {
+            while (j < s) {
+                if (y == n_1) {
                     break;
                 }
-                y = Degree(y, two, n);
-                if((y.al[0] == 1) && (y.ar == y.al)) {
+                y2 = y * y;
+                y = BurretReduction(y2, n, zBurret);
+                if ((y.al[0] == 1) && (y.ar == y.al)) {
                     return false;
                 }
                 j++;
             }
-            if(y != n_1) {
+            if (y != n_1) {
                 return false;
             }
         }
