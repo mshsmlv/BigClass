@@ -191,18 +191,17 @@ Big Karatsuba(Big &u, Big &v)
 
 bool MillerRabin(Big &n, int t)
 {
+    if( !(n.al[0]&1) ) {
+        return false;
+    }
+
     int i, j, s;
     base remainder;
-    Big r, n_1, n_3, one, two, three, b, y, y2;
+    Big r, n_1, n_3, one, two, three, b, y, y2, s_2, s_3;
     Big zBurret = GetZForBurretReduction(n);
-    one.al[0] = 1;
-    one.ar = one.al;
-
-    two.al[0] = 2;
-    two.ar = two.al;
-
-    three.al[0] = 3;
-    three.ar = three.al;
+    one = static_cast<base>(1);
+    two = static_cast<base>(2);
+    three = static_cast<base>(3);
 
     n_1 = n - one;
 
@@ -221,6 +220,8 @@ bool MillerRabin(Big &n, int t)
         s++;
         ;
     }
+
+    r = n_1.RightShift(s);
 
     while (t) {
         b.Rand(n.GetLength());
@@ -250,4 +251,16 @@ bool MillerRabin(Big &n, int t)
         t--;
     }
     return true;
+}
+
+Big GenPrime(int n) 
+{
+    Big pretender;
+
+    while(1) {
+        pretender.Rand(n);
+        if(MillerRabin(pretender, 1000)) {
+            return pretender;
+        }
+    }
 }

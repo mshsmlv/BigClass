@@ -46,53 +46,16 @@ int main()
          std::cout << "w = " << w << std::endl;
      };
 */
-    Big x, z, mod, result, result1;
-    int M = 10000;
-    int T, T1;
-    T = T1 = test_range;
-    int t;
-    /*
-        while(T) {
-          x.Rand(rand()%M);
-          z.Rand(rand()%M);
 
-          result = Karatsuba(x, z);
-          result1 = x*z;
-          if(result != result1) {
-            std::cout << "T = " <<T << std::endl;
-            std::cout << "x = " << x << std::endl;
-            std::cout << "z = " << z << std::endl;
-            std::cout << "result  = " << result << std::endl;
-            std::cout << "result1 = " << result1 << std::endl;
-            std::cout << "result_length  = " << result.GetLength() << std::endl;
-            std::cout << "result1_length = " << result1.GetLength() << std::endl;
-            return 0;
-          }
-          T--;
-        }*/
+    Big n, n1;
+    srand(time(NULL));
+    n = GenPrime(45);
+    std::cout<< n << std::endl;
+   
+   // std::cin >> n;
 
-    /*    x.Rand(M);
-        z.Rand(M);
-        t = time(NULL);
-        while (T) {
-            Karatsuba(x, z);
-            T--;
-        }
-        t = time(NULL) - t;
-        std::cout << "Karatsuba time: " << t << std::endl;
+  //  if (MillerRabin(n, 10)) {
+ //      std::cout << "OK" << std::endl;
+   // }
 
-        t = time(NULL);
-        while (T1) {
-            x *z;
-            T1--;
-        }
-        t = time(NULL) - t;
-        std::cout << "Mul time: " << t << std::endl;*/
-
-    Big n;
-    std::cin >> n;
-
-    if (MillerRabin(n, 10)) {
-        std::cout << "OK" << std::endl;
-    }
 }

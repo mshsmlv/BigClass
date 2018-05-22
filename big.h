@@ -41,6 +41,7 @@ public:
     friend Big BurretReduction(Big &x, Big &mod, Big &z);
     friend Big Karatsuba(Big &u, Big &v);
     friend bool MillerRabin(Big &n, int t);
+    friend Big GenPrime(int n);
 
     Big &operator=(const Big &a);  // this = a
     Big &operator=(base a);
@@ -60,4 +61,8 @@ public:
 
     friend istream &operator>>(istream &in, Big &a);
     friend ostream &operator<<(ostream &out, Big &a);
+
+    Big RightShift(int n);
 };
+
+Big GenPrime(int n);

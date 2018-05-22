@@ -217,6 +217,7 @@ Big &Big ::operator=(const Big &a)
         ar++;
     }
     ar--;
+    return *this;
 }
 
 Big &Big ::operator=(base a)
@@ -227,6 +228,7 @@ Big &Big ::operator=(base a)
 
     ar = al;
     al[0] = a;
+    return *this;
 }
 
 Big &Big::operator=(doubleBase a)
@@ -239,6 +241,7 @@ Big &Big::operator=(doubleBase a)
     al[0] = a % (static_cast<doubleBase>(1) << (sizeof(base) * 8));
     al[1] = a / (static_cast<doubleBase>(1) << (sizeof(base) * 8));
     Compress();
+    return *this;
 }
 
 Big operator+(Big &b, Big &a)
@@ -813,4 +816,23 @@ istream &operator>>(istream &in, Big &a)
     }
     a.ar--;
     return in;
+}
+
+Big Big::RightShift(int n) {
+
+    int Length = GetLength();
+    Big result;
+    result.Resize(Length);
+
+    int part_shift = n%(sizeof(base)*8);
+    int hight_part_shift = (sizeof(base)*8 - part_shift);
+    int i,j;
+    for(i = (n/(sizeof(base)*8)), j = 0; i < Length-1; i++, j++) {
+        result.al[j] = (al[i]>>part_shift) | (al[i+1]<< hight_part_shift);
+    }
+
+    result.al[j++] = al[i] >> part_shift;
+    
+    result.ar = result.al + j - 1;
+    return result;
 }
