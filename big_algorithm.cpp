@@ -191,41 +191,46 @@ Big Karatsuba(Big &u, Big &v)
 
 bool MillerRabin(Big &n, int t)
 {
-    if( !(n.al[0]&1) ) {
+    if (!(n.al[0] & 1)) {
+        return false;
+    }
+
+    Big three;
+    three = static_cast<base>(3);
+
+    if (n <= three) {
         return false;
     }
 
     int i, j, s;
     base remainder;
-    Big r, n_1, n_3, one, two, three, b, y, y2, s_2, s_3;
+    Big r, n_1, n_3, one, two, b, y, y2, s_2, s_3;
     Big zBurret = GetZForBurretReduction(n);
+    int base_bits = sizeof(base) * 8;
     one = static_cast<base>(1);
     two = static_cast<base>(2);
-    three = static_cast<base>(3);
 
     n_1 = n - one;
+    n_3 = n - three;
 
     j = 0;
     s = 0;
     i = 0;
-    while (1) {
-        if (j == (sizeof(base) * 8)) {
-            j = 0;
-            i++;
-        }
-        if ((n_1.al[i] >> j) & 1) {
-            break;
-        }
-        j++;
+
+    while (!n_1.al[i]) {
+        s += base_bits;
+        i++;
+    }
+
+    while (!((n_1.al[i] >> j) & 1)) {
         s++;
-        ;
+        j++;
     }
 
     r = n_1.RightShift(s);
 
     while (t) {
         b.Rand(n.GetLength());
-        n_3 = n - three;
         b = b % n_3;
         b = b + two;
 
@@ -239,7 +244,7 @@ bool MillerRabin(Big &n, int t)
                 }
                 y2 = y * y;
                 y = BurretReduction(y2, n, zBurret);
-                if ((y.al[0] == 1) && (y.ar == y.al)) {
+                if (CompareWithConst(y, 1)) {
                     return false;
                 }
                 j++;
@@ -253,13 +258,33 @@ bool MillerRabin(Big &n, int t)
     return true;
 }
 
-Big GenPrime(int n) 
+Big GenPrime(int n)
 {
     Big pretender;
+    int base_bits = sizeof(base) * 8;
+    int hight_box_bits = n % base_bits;
+    int hight_box_bits_1 = hight_box_bits - 1;
+    int boxes;
+    bool flag = 0;
 
-    while(1) {
-        pretender.Rand(n);
-        if(MillerRabin(pretender, 1000)) {
+    if(!(n % base_bits)) {
+        boxes = (n / base_bits);
+        flag = 1;
+
+    }
+    else {
+        boxes = (n / base_bits) + !!(hight_box_bits);
+    }
+
+    while (1) {
+        pretender.Rand(boxes);
+        if(flag) {
+            pretender.al[boxes-1] |= 1 << (base_bits - 1);
+        } else {
+            pretender.al[boxes - 1] &= (1ull << (hight_box_bits)) - 1;
+            pretender.al[boxes - 1] |= (1 << (hight_box_bits_1));
+        }
+        if (MillerRabin(pretender, 1000)) {
             return pretender;
         }
     }

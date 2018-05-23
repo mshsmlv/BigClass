@@ -48,14 +48,14 @@ int main()
 */
 
     Big n, n1;
-    srand(time(NULL));
-    n = GenPrime(45);
-    std::cout<< n << std::endl;
-   
-   // std::cin >> n;
+ //  srand(time(NULL));
+    for(int i = 3; i <= 40; i++) {
+        n = GenPrime(1734);
+        std::cout << i << " bits " << n << std::endl;
+    }
+    // std::cin >> n;
 
-  //  if (MillerRabin(n, 10)) {
- //      std::cout << "OK" << std::endl;
-   // }
-
+    //  if (MillerRabin(n, 10)) {
+    //      std::cout << "OK" << std::endl;
+    // }
 }
